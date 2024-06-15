@@ -1,6 +1,41 @@
-module.exports = function(api) {
-  api.cache(true);
-  return {
-    presets: ['babel-preset-expo'],
-  };
+module.exports = {
+  presets: ['module:metro-react-native-babel-preset'],
+  plugins: [
+    'inline-dotenv',
+    'module:react-native-dotenv',
+    'react-native-reanimated/plugin',
+    [
+      'module-resolver',
+      {
+        root: ['.'],
+        extensions: [
+          '.ios.ts',
+          '.android.ts',
+          '.ts',
+          '.ios.tsx',
+          '.android.tsx',
+          '.tsx',
+          '.jsx',
+          '.js',
+          '.json',
+        ],
+        alias: {
+          '@app/actions': './app/actions',
+          '@app/reducers': './app/reducers',
+          '@app/actions': './app/actions',
+          '@app/config': './app/config',
+          '@app/context': './app/context',
+          '@app/constants': './app/constants',
+          '@app/layout': './app/layout',
+          '@app/navigation': './app/navigation',
+          '@app/screens': './app/screens',
+          '@app/theme': './app/theme',
+          '@app/types': './app/types',
+          '@app/utils': './app/utils',
+          '@app/assets': './assets',
+          '@app/fake-data': './app/fake-data',
+        },
+      },
+    ],
+  ],
 };

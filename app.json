@@ -1,7 +1,12 @@
 {
   "expo": {
-    "name": "spare-buddy",
-    "slug": "spare-buddy",
+    "name": "SparePal",
+    "slug": "spare-pal",
+    "description": "Buy car and machine parts",
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -9,22 +14,36 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#EE1616"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sparepal.ios",
+      "infoPlist": {
+        "NSUserTrackingUsageDescription": "We use Tracking to fix bugs and improve your experience.",
+        "NSCameraUsageDescription": "Camera used for taking photos of clothing",
+        "NSPhotoLibraryUsageDescription": "Photos used for profile picture"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "backgroundColor": "#EE1616"
+      },
+      "package": "com.sparepal.android",
+      "permissions": [
+        "CAMERA",
+        "READ_INTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "owner": "wuhibe"
   }
 }

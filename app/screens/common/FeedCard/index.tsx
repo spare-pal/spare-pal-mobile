@@ -8,7 +8,6 @@ import React, { useContext, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import { Col, Grid, Row } from 'react-native-easy-grid'
 import { useSelector } from 'react-redux'
-import TagDisplay from '../../../../app/screens/common/TagDisplay'
 import FeedCarousel from '../../common/FeedCarousel'
 
 interface FeedCardProps {
@@ -188,25 +187,6 @@ const FeedCard: React.FC<FeedCardProps> = ({
         </View>
 
         <FeedCarousel items={Images} onPress={(i) => navigateToScreen(i)} />
-        <TagDisplay
-          items={Images}
-          options={options}
-          value={tags}
-          onChange={(tags) => {}}
-          labelExtractor={(tag) => tag}
-          text={''}
-          inputProps={{
-            placeholder: '',
-
-            placeholderTextColor: 'blue',
-          }}
-          tagColor={theme.accent}
-          tagTextStyle={{ fontSize: 12 }}
-          tagContainerStyle={{ height: 26, borderRadius: 6 }}
-          tagTextColor={theme.white}
-          editable={false}
-          onChangeText={(value) => setText(value)}
-        />
         <Grid>
           <Col>
             <Row>

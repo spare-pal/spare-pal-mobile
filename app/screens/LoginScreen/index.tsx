@@ -165,7 +165,7 @@ const LoginScreen: React.FC = ({ navigation, route }: any) => {
             showErrorNotification(err.body.message)
           }
           if (err.statusCode === 404) {
-            navigate('RegisterScreen', { step: 0, phone_number: phoneNumber })
+            navigate('RegisterScreen', { step: 1, phone_number: phoneNumber })
           }
         },
       }
@@ -206,26 +206,8 @@ const LoginScreen: React.FC = ({ navigation, route }: any) => {
         },
         onFail: (response: any) => {
           setLoadingUserLogin(false)
-          if (response && response.statusCode === 401) {
-            navigate('RegisterScreen', { step: 2 })
-          } else if (response && response.statusCode === 400) {
-            if (
-              response.body.non_field_errors[0] == 'User account is disabled.'
-            ) {
-              navigate('RegisterScreen', {
-                step: 2,
-                initialValues: {
-                  phone_number: phoneNumber,
-                  password: password,
-                },
-              })
-            } else {
-              showErrorNotification(
-                response.body.phone_number
-                  ? response.body.phone_number[0]
-                  : response.body.non_field_errors[0]
-              )
-            }
+          if (response.body && response.body.message) {
+            showErrorNotification(response.body.message)
           }
         },
       }

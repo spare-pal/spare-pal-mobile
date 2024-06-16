@@ -1,59 +1,35 @@
-import { AppContext } from '@app/context'
 import { ThemeStatic } from '@app/theme'
 import { signUpSecondValidationSchema } from '@app/utils/validation'
 import * as Linking from 'expo-linking'
 import { Formik } from 'formik'
 import { InputGroup } from 'native-base'
-import React, { useContext, useEffect, useRef, useState } from 'react'
-import {
-  Animated,
-  SafeAreaView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native'
-import { Button } from 'react-native-elements'
-import { styles } from '../styles'
-
+import React, { useEffect, useState } from 'react'
+import { Animated, SafeAreaView, Text, View } from 'react-native'
 import {
   CodeField,
   Cursor,
   useBlurOnFulfill,
   useClearByFocusCell,
 } from 'react-native-confirmation-code-field'
-import { useSelector } from 'react-redux'
+import { Button } from 'react-native-elements'
 import { ISignUpStepSecondValues } from '../interface'
+import { styles } from '../styles'
+
 interface Step2Interface {
   step: number
   loadingUserLogin: boolean
   formValues: ISignUpStepSecondValues
   onNext: (n: number, values: any) => void
-  onOtpVerified: ({ token: string }) => void
 }
 const Step2: React.FC<Step2Interface> = ({
   formValues,
   loadingUserLogin,
   step,
   onNext,
-  onOtpVerified,
 }) => {
-  const { theme } = useContext(AppContext)
-
   const opacity = new Animated.Value(0)
-  const [formatted_address, setFormatted_address] = useState('')
-  const [selected_street_address, setSelected_street_address] = useState('')
-  const [selected_address_remainder, setSelected_address_remainder] =
-    useState('')
-  const [top_view_visible, setTop_view_visible] = useState(true)
-  const user = useSelector((state) => state.user)
 
   useEffect(() => {
-    const handleOpenURL = (e: Linking.EventType) => {
-      const { queryParams } = Linking.parse(e.url)
-      if (queryParams.token) {
-        onOtpVerified({ token: queryParams.token })
-      }
-    }
     const handleOpenURL1 = (e: Linking.EventType | string) => {}
     Linking.getInitialURL()
       .then((ev) => {
@@ -64,12 +40,7 @@ const Step2: React.FC<Step2Interface> = ({
       .catch((err) => {
         console.warn('An error occurred', err)
       })
-    const url = Linking.makeUrl('/verify', {})
-    const url1 = Linking.createURL('/?')
-    const eventListener = Linking.addEventListener('url', handleOpenURL)
   }, [])
-  const ref = useRef()
-  const verificationRef = useRef(null)
 
   useEffect(() => {
     Animated.timing(opacity, {
@@ -79,10 +50,6 @@ const Step2: React.FC<Step2Interface> = ({
     }).start()
   }, [step])
 
-  const saveButtonTranslationX = opacity.interpolate({
-    inputRange: [0, 1],
-    outputRange: [100, 0],
-  })
   const CELL_COUNT = 4
   const [value, setValue] = useState('')
   const ref1 = useBlurOnFulfill({ value, cellCount: CELL_COUNT })
@@ -99,7 +66,7 @@ const Step2: React.FC<Step2Interface> = ({
         },
       ]}
     >
-      <View style={styles(theme).roundedViewInner}>
+      <View style={styles().roundedViewInner}>
         <View style={{ flex: 1, flexDirection: 'column' }}>
           <Formik
             initialValues={{ ...formValues }}
@@ -113,17 +80,17 @@ const Step2: React.FC<Step2Interface> = ({
               errors,
               touched,
             }) => (
-              <View style={styles(theme).roundedContent}>
-                <View style={styles(theme).sectionRow}>
+              <View style={styles().roundedContent}>
+                <View style={styles().sectionRow}>
                   <View style={{ flex: 1 }}>
-                    {errors.verification_code ? (
+                    {errors.password ? (
                       <Text
                         style={[
-                          styles(theme).sectionText,
+                          styles().sectionText,
                           { color: ThemeStatic.badge },
                         ]}
                       >
-                        {errors.verification_code}
+                        {errors.password}
                       </Text>
                     ) : null}
                     <InputGroup borderType='underline'>
@@ -131,8 +98,8 @@ const Step2: React.FC<Step2Interface> = ({
                         <CodeField
                           ref={ref1}
                           {...props}
-                          value={values.verification_code}
-                          onChangeText={handleChange('verification_code')}
+                          value={values.password}
+                          onChangeText={handleChange('password')}
                           cellCount={CELL_COUNT}
                           rootStyle={styles().codeFieldRoot}
                           keyboardType='number-pad'
@@ -149,7 +116,7 @@ const Step2: React.FC<Step2Interface> = ({
                               {symbol || (isFocused ? <Cursor /> : null)}
                             </Text>
                           )}
-                          accessibilityLabel={'Verification_CodeField'}
+                          accessibilityLabel={'passwordField'}
                         />
                       </SafeAreaView>
                     </InputGroup>
@@ -157,14 +124,14 @@ const Step2: React.FC<Step2Interface> = ({
                 </View>
                 <Button
                   onPress={() => {
-                    onNext(2, values)
+                    onNext(2, { otp: values.password })
                   }}
                   loading={loadingUserLogin}
                   fontWeight='bold'
                   fontFamily='sans-serif'
                   buttonStyle={[
                     styles().button,
-                    { backgroundColor: '#846BE2' },
+                    { backgroundColor: ThemeStatic.accent },
                   ]}
                   title='Submit'
                   accessibilityLabel={'Verification_Submit'}
@@ -172,18 +139,6 @@ const Step2: React.FC<Step2Interface> = ({
               </View>
             )}
           </Formik>
-          <View>
-            <TouchableOpacity
-              onPress={() => onNext(2, 'resendOtp')}
-              style={styles(theme).terms}
-              accessibilityLabel={'Verification_ResendOtp'}
-            >
-              <Text style={styles(theme).termsText}>
-                Didn't get the code?{' '}
-                <Text style={styles().resendText}>Resend</Text>
-              </Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </View>
     </View>

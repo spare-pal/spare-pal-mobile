@@ -1,14 +1,12 @@
 export interface ISignUpStepFirstValues {
-  email: string
-  password: string
+  email: string | null
+  phone_number: string
   first_name: string
   last_name: string
-  confirmPassword: string
 }
 
 export interface ISignUpStepSecondValues {
-  verification_code: string
-  email: string
+  phone_number: string
   password: string
 }
 export interface ISignUpStepThirdValues {

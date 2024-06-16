@@ -39,7 +39,7 @@ const WebService = (() => {
   }
 
   const signUp = (data: any) => {
-    return NetworkHelper.requestPost(__makeUrl('/auth/register'), data)
+    return NetworkHelper.requestPost(__makeUrl('/auth/sign-up'), data)
   }
 
   const refreshAuthToken = async () => {
@@ -132,7 +132,7 @@ const WebService = (() => {
 
   const updateProfile = async (item: any) => {
     const token = await __getToken()
-    return NetworkHelper.requestPatch(__makeUrl(`/profile`), item, token)
+    return NetworkHelper.requestPatch(__makeUrl(`/auth/profile`), item, token)
   }
 
   const deleteProfile = async () => {
@@ -142,7 +142,7 @@ const WebService = (() => {
 
   const getUserProfile = async () => {
     const token = await __getToken()
-    return NetworkHelper.requestGet(__makeUrl(`/profile`), token)
+    return NetworkHelper.requestGet(__makeUrl(`/auth/profile`), token)
   }
 
   const getBundleList = async (url: any) => {

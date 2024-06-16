@@ -1,4 +1,4 @@
-import { getUserProfile, stripeAccountLink } from '@app/actions/login'
+import { getUserProfile } from '@app/actions/login'
 import { getProducts } from '@app/actions/product'
 import {
   addHistory,
@@ -8,19 +8,15 @@ import {
   getShopList,
 } from '@app/actions/shop'
 import { AppContext } from '@app/context'
-import { datas, genders } from '@app/fake-data'
-import {
-  AnimatedSearchBar,
-  ExploreScreenPlaceholder,
-  ListEmptyComponent,
-} from '@app/layout'
+import { datas } from '@app/fake-data'
+import { ExploreScreenPlaceholder, ListEmptyComponent } from '@app/layout'
 import { ThemeStatic, Typography } from '@app/theme'
 import { ThemeColors } from '@app/types/theme'
-import { FontAwesome, MaterialIcons } from '@expo/vector-icons'
+import { FontAwesome } from '@expo/vector-icons'
 import * as Linking from 'expo-linking'
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency'
-import { Button, Text } from 'native-base'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import { Text } from 'native-base'
+import React, { useContext, useEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Animated,
@@ -28,21 +24,19 @@ import {
   Keyboard,
   Platform,
   RefreshControl,
-  ScrollView,
   StatusBar,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
-import SectionedMultiSelect from 'react-native-sectioned-multi-select'
 import {
   CollapsibleSubHeaderAnimator,
   useCollapsibleHeader,
 } from 'react-navigation-collapsible'
 import { useDispatch, useSelector } from 'react-redux'
+import { AnimatedSearchBar } from '../../layout'
 import FeedCard from '../common/FeedCard'
-import { FilterSheet } from './components/index'
 
 const { FontWeights, FontSizes } = Typography
 
@@ -66,8 +60,6 @@ const CustomStatusBar = ({
 const HomeScreen: React.FC = ({ navigation, route }: any) => {
   const {
     theme,
-    filters,
-    updateFilters,
     size,
     updateSize,
     brand,
@@ -79,7 +71,6 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
   } = useContext(AppContext)
   const { navigate } = navigation
   const dispatch = useDispatch()
-  const filterSheetRef = useRef()
   const [searchText, setSearchText] = useState<string>('')
   const [searchResults, setSearchResults] = useState<any>([])
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false)
@@ -98,11 +89,7 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
 
   const historyData = useSelector((state) => state?.shop?.historyData)
   const user = useSelector((state) => state?.user)
-
   const isRefreshing = useSelector((state) => state?.shop?.shopListLoading)
-
-  const [shoesSize, setshoesSize] = useState([])
-  const [otherSize, setotherSize] = useState([])
 
   useEffect(() => {
     ;(async () => {
@@ -164,7 +151,6 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
       dispatch(getUserProfile(userProfile))
       dispatch(getProducts())
       // dispatch(refreshAuthToken())
-      dispatch(stripeAccountLink())
     }
   }, [])
 
@@ -176,10 +162,6 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
         },
       },
     })
-
-  const onFilterOpen = () => filterSheetRef?.current?.open()
-
-  const onFilterClose = () => filterSheetRef?.current?.close()
 
   const [multiSize, setMultiSize] = useState([])
 
@@ -357,255 +339,12 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
                 onBlur={onBlur}
                 value={searchText}
                 onChangeText={onChangeText}
-                placeholder='Search styles, brands, etc'
+                placeholder='Search'
                 visible={isSearchFocused}
               ></AnimatedSearchBar>
             </View>
-            <View style={{ justifyContent: 'center' }}>
-              {!isSearchFocused && (
-                <TouchableOpacity
-                  activeOpacity={0.75}
-                  onPress={onFilterOpen}
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    paddingLeft: 10,
-                  }}
-                >
-                  <Text style={styles(theme).navbarFilterText}>Filter</Text>
-                  <MaterialIcons
-                    size={25}
-                    as={MaterialIcons}
-                    name='filter-list'
-                    style={[styles(theme).navbarFilter]}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
+            <View style={{ justifyContent: 'center' }}></View>
           </View>
-
-          <ScrollView style={[styles(theme).subContent]} horizontal>
-            <View
-              style={[
-                styles(theme).centerStyle,
-                styles(theme).fitlerItemContainer,
-                { padding: 7 },
-              ]}
-            >
-              <SectionedMultiSelect
-                IconRenderer={MaterialIcons}
-                items={genders && genders.length > 0 ? genders : []}
-                uniqueKey='name'
-                subKey='children'
-                selectText={'Gender'}
-                selectedText='selected'
-                showChips={false}
-                showDropDowns={true}
-                selectChildren={true}
-                readOnlyHeadings={false}
-                onSelectedItemsChange={onChangeGender}
-                onSelectedItemObjectsChange={(res) => {
-                  let data = res.map((items) => {
-                    return items.id
-                  })
-                  setGenderId(data)
-                }}
-                selectedItems={selectedGender}
-                colors={{ primary: ThemeStatic.accent }}
-                expandDropDowns
-                modalWithSafeAreaView
-                showCancelButton
-                modalWithTouchable
-                searchPlaceholderText='Search Gender'
-                styles={multiSelectionFilterStyle}
-                onConfirm={() => {
-                  applyFilterData()
-                }}
-              />
-            </View>
-            <View
-              style={[
-                styles(theme).centerStyle,
-                styles(theme).fitlerItemContainer,
-              ]}
-            >
-              <SectionedMultiSelect
-                IconRenderer={MaterialIcons}
-                items={
-                  options && options.categories && options.categories.length > 0
-                    ? options.categories
-                    : []
-                }
-                uniqueKey='name'
-                subKey='children'
-                selectText='Category'
-                showChips={false}
-                selectedText='selected'
-                showDropDowns={true}
-                selectChildren={true}
-                readOnlyHeadings={false}
-                onSelectedItemsChange={onChangeCategory}
-                selectedItems={category}
-                onSelectedItemObjectsChange={(res) => {
-                  let data = res.map((items) => {
-                    return items.id
-                  })
-                  setCateId(data)
-                }}
-                colors={{ primary: ThemeStatic.accent }}
-                showCancelButton={false}
-                modalWithSafeAreaView
-                modalWithTouchable
-                searchPlaceholderText='Search Category'
-                hideChipRemove={false}
-                styles={multiSelectionFilterStyle}
-                onConfirm={() => {
-                  applyFilterData()
-                }}
-              />
-            </View>
-
-            <View
-              style={[
-                styles(theme).centerStyle,
-                styles(theme).fitlerItemContainer,
-              ]}
-            >
-              <SectionedMultiSelect
-                IconRenderer={MaterialIcons}
-                items={
-                  multiSize.length > 0
-                    ? multiSize
-                    : otherSize && otherSize.length > 0
-                      ? otherSize
-                      : []
-                }
-                uniqueKey='name'
-                subKey='children'
-                selectText='Sizes'
-                selectedText='selected'
-                showDropDowns={true}
-                selectChildren={true}
-                readOnlyHeadings={false}
-                showChips={false}
-                onSelectedItemsChange={onChangeSize}
-                selectedItems={size}
-                onSelectedItemObjectsChange={(res) => {
-                  let sdata = res.map((items) => {
-                    return items.id
-                  })
-                  setSizeId(sdata)
-                }}
-                colors={{ primary: ThemeStatic.accent }}
-                expandDropDowns
-                modalWithSafeAreaView
-                showCancelButton
-                modalWithTouchable
-                searchPlaceholderText='Search Size'
-                styles={multiSelectionFilterStyle}
-                onConfirm={() => {
-                  applyFilterData()
-                }}
-              />
-            </View>
-            <View
-              style={[
-                styles(theme).centerStyle,
-                styles(theme).fitlerItemContainer,
-              ]}
-            >
-              <SectionedMultiSelect
-                IconRenderer={MaterialIcons}
-                items={
-                  options && options.brands && options.brands.length > 0
-                    ? options.brands.map((x) => ({
-                        ...x,
-                        title: x.suggested
-                          ? x.title + ' (pending review)'
-                          : x.title,
-                      }))
-                    : []
-                }
-                uniqueKey='name'
-                subKey='children'
-                selectText='Brands'
-                showChips={false}
-                selectedText='selected'
-                showDropDowns={true}
-                selectChildren={true}
-                readOnlyHeadings={false}
-                onSelectedItemsChange={onChangeBrand}
-                selectedItems={brand}
-                onSelectedItemObjectsChange={(res) => {
-                  let bdata = res.map((items) => {
-                    return items.id
-                  })
-                  setBrandsId(bdata)
-                }}
-                colors={{ primary: ThemeStatic.accent }}
-                expandDropDowns={false}
-                modalWithSafeAreaView
-                modalWithTouchable
-                searchPlaceholderText='Search Brands'
-                styles={multiSelectionFilterStyle}
-                onConfirm={() => {
-                  applyFilterData()
-                }}
-              />
-            </View>
-
-            {filters.map((item) => {
-              return (
-                <View
-                  style={[
-                    styles(theme).centerStyle,
-                    styles(theme).fitlerItemContainerClose,
-                    { width: item.length * 5 + 70, height: 50 },
-                  ]}
-                >
-                  <Text style={styles(theme).typeText}>{item}</Text>
-                  <Button onPress={() => updateFilters(item)}>
-                    <FontAwesome
-                      type='FontAwesome'
-                      name='close'
-                      size={24}
-                      style={{
-                        color: ThemeStatic.black,
-                        fontSize: 24,
-                        marginLeft: 5,
-                      }}
-                    />
-                  </Button>
-                </View>
-              )
-            })}
-
-            {isClear && (
-              <TouchableOpacity onPress={resetFilters}>
-                <View
-                  style={[
-                    styles(theme).centerStyle,
-                    styles(theme).fitlerItemContainerClose,
-                    { width: 5 * 5 + 70, height: 38 },
-                  ]}
-                >
-                  {/* <Text style={styles(theme).typeText}>Test</Text> */}
-
-                  <Text style={styles(theme).clearFilterText}>Reset</Text>
-
-                  <FontAwesome
-                    type='FontAwesome'
-                    name='close'
-                    size={24}
-                    style={{
-                      fontSize: 12,
-                      marginLeft: 5,
-                    }}
-                  />
-                </View>
-              </TouchableOpacity>
-            )}
-          </ScrollView>
         </Animated.View>
       </SafeAreaView>
     )
@@ -964,7 +703,7 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
       {Platform.OS === 'ios' ? (
         <CustomStatusBar backgroundColor='#f8f8f8' />
       ) : (
-        <StatusBar barStyle='default' backgroundColor={ThemeStatic.accent} />
+        <StatusBar barStyle='default' backgroundColor='#f8f8f8' />
       )}
 
       <Animated.View style={{ flex: 1 }}>
@@ -974,8 +713,6 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
       <CollapsibleSubHeaderAnimator translateY={translateY}>
         {header}
       </CollapsibleSubHeaderAnimator>
-
-      <FilterSheet ref={filterSheetRef} onFilterClose={onFilterClose} />
     </View>
   )
 }

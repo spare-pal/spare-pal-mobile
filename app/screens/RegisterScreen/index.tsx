@@ -1,64 +1,37 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
-import { ImageBackground, TouchableOpacity, View, Text } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
-import { AppContext } from '@app/context'
+import { clearLogin, loginUser, timeoutLogin } from '@app/actions/login'
+import { signupUser } from '@app/actions/signup'
 import { handleLoginError, signOut } from '@app/utils/authentication'
 import {
-  welcomeNotification,
   showErrorNotification,
-  showSuccessNotification,
+  welcomeNotification,
 } from '@app/utils/notifications'
 import { loadToken } from '@app/utils/reduxStore'
-
-import TermsAndConditionsBottomSheet from './components/TermsAndConditionsBottomSheet'
-import VerificationCode from './components/step2'
-import LoginDetail from './components/step1'
-
-import { signupUser, confirmCode, resendOtp } from '@app/actions/signup'
-import { loginUser, clearLogin, timeoutLogin } from '@app/actions/login'
-
-import {
-  ISignUpStepFirstValues,
-  ISignUpStepSecondValues,
-  ISignUpStepThirdValues,
-} from './interface'
-import { styles } from './styles'
-import { getUserProfile } from '@app/actions/login'
-import { addItemToCart } from '@app/actions/product'
+import React, { useEffect, useState } from 'react'
+import { Text, TouchableOpacity, View } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { LeftArrow, Logo } from '../../utils/commonFuntions'
-import { saveTokenAndNavigate } from '@app/utils/common'
-import { RootState } from 'reducers'
+import { useDispatch, useSelector } from 'react-redux'
+import { LeftArrow } from '../../utils/commonFuntions'
+import { saveToken } from '../../utils/reduxStore'
+import LoginDetail from './components/step1'
+import VerificationCode from './components/step2'
+import { ISignUpStepFirstValues, ISignUpStepSecondValues } from './interface'
+import { styles } from './styles'
 
 const LoginScreen: React.FC = ({ navigation, route }: any) => {
   const dispatch = useDispatch()
-
-  const { theme } = useContext(AppContext)
   const { navigate, goBack } = navigation
   const [initializing, setInitializing] = useState(true)
-  const [googleLoading, setGoogleLoading] = useState(false)
-  const [facebookLoading, setFacebookLoading] = useState(false)
   const [loginDetailData, setLoginDetailData] =
     useState<ISignUpStepFirstValues>({
-      email: '',
-      password: '',
+      email: null,
+      phone_number: '',
       first_name: '',
       last_name: '',
-      confirmPassword: '',
     })
   const [validationCodeValues, setValidationCodeValues] =
     useState<ISignUpStepSecondValues>({
-      verification_code: '',
-      email: '',
+      phone_number: '',
       password: '',
-    })
-  const [contactDetailValues, setContactDetailValues] =
-    useState<ISignUpStepThirdValues>({
-      first_name: 'test',
-      last_name: 'test',
-      city: 'test',
-      address_line_1: 'test',
-      postal_code: 'test',
     })
 
   const steps = route.params?.step ?? 1
@@ -67,20 +40,21 @@ const LoginScreen: React.FC = ({ navigation, route }: any) => {
 
   useEffect(() => {
     setValidationCodeValues(initialValues)
-  })
+  }, [])
 
-  const [termsConfirmationModal, setTermsConfirmationModal] = useState(false)
-  const user = useSelector((state: RootState) => state.user)
-  const { profile, success, error, loadingUserLogin } = user
+  const saveTokenAndNavigate = async (token: string) => {
+    try {
+      await saveToken(token)
+      navigateToApp(token)
+    } catch (err) {
+      console.log(err)
+    }
+  }
+  const user = useSelector((state) => state.user)
+  const { success, error, loadingUserLogin } = user
 
-  const cartData = useSelector((state: RootState) => state.cart)
-  const { carts, error: reduxError } = cartData
-
-  const termsAndConditionsBottomSheetRef = useRef() as any
-  const onTermAndCondtion = () =>
-    termsAndConditionsBottomSheetRef.current.open()
-
-  const bgImage = require('@app/assets/images/app-auth-bg.png')
+  const cartData = useSelector((state) => state.cart)
+  const { carts } = cartData
 
   const navigateBack = () => goBack()
 
@@ -116,126 +90,41 @@ const LoginScreen: React.FC = ({ navigation, route }: any) => {
     }
   }
 
-  const termsConfirmationToggle = () => {
-    setTermsConfirmationModal(!termsConfirmationModal)
-  }
-
   const goToStep = (n: number, values: any) => {
-    if (n === 2 && values === 'resendOtp') {
-      resendUserOtp()
-    } else {
-      if (n === 1) {
-        setLoginDetailData(values)
-        onSubmit(values)
-      } else if (n === 2) {
-        if (values.verification_code === '') {
-          showErrorNotification('Verification code is required!')
-        } else {
-          setValidationCodeValues(values)
-          verifyOTP(values)
+    if (n === 1) {
+      setLoginDetailData(values)
+      onSubmit(values)
+    } else if (n === 2) {
+      if (values.otp === '') {
+        showErrorNotification('Verification code is required!')
+      } else {
+        const obj = {
+          phone_number: loginDetailData.phone_number,
+          password: values.otp,
+          onSuccess: async (res: any) => {
+            if (res && res.accessToken) {
+              await saveTokenAndNavigate(res.accessToken)
+            }
+          },
         }
+        console.log(obj)
+        dispatch(loginUser(obj))
       }
-    }
-  }
-
-  const resendUserOtp = () => {
-    let otpObj = {
-      email: {
-        email: loginDetailData.email
-          ? loginDetailData.email
-          : validationCodeValues.email,
-      },
-      onSuccess: (res) => {
-        if (res && res.message) {
-          showSuccessNotification(res.message)
-        }
-      },
-      onFail: (err) => {
-        console.log('fail', err.response)
-      },
-    }
-    dispatch(resendOtp(otpObj))
-  }
-
-  const otpVerifiedSuccess = async (res) => {
-    if (res && res.token) {
-      await saveTokenAndNavigate(res, navigate)
-      setTimeout(() => {
-        setLoginDetailData({
-          email: '',
-          password: '',
-          first_name: '',
-          last_name: '',
-          confirmPassword: '',
-        })
-        setStep(1)
-      }, 2000)
-      dispatch(getUserProfile({}))
-      carts.map((item) => {
-        dispatch(addItemToCart(item.listing))
-      })
-    }
-  }
-  const verifyOTP = (values) => {
-    if (profile === null) {
-      let req = {
-        code: {
-          email: values.email ? values.email : loginDetailData.email,
-          code: values.verification_code,
-        },
-        onSuccess: (res) => {
-          let loginObj = {
-            email: loginDetailData.email
-              ? loginDetailData.email
-              : validationCodeValues.email,
-            password: loginDetailData.password
-              ? loginDetailData.password
-              : validationCodeValues.password,
-            onSuccess: otpVerifiedSuccess,
-            onFail: (err) => {
-              console.log(err)
-            },
-          }
-
-          dispatch(loginUser(loginObj))
-        },
-        onFail: (err) => {
-          console.log('err', err)
-          if (err.code) {
-            showErrorNotification(err.code)
-          } else if (err.email) {
-            showErrorNotification(err.email)
-          } else if (err.non_field_errors) {
-            showErrorNotification(err.non_field_errors)
-          }
-        },
-      }
-
-      dispatch(confirmCode(req))
     }
   }
 
   const onSubmit = (values: any) => {
     let data = {} as any
-    let additionalData = {
-      country: 'US',
-      expo_push_token: 'token',
-      is_stripe_connected: false,
-    }
-    data = { ...values, ...additionalData }
-    let email = data.email.toLowerCase()
+    data = { ...values }
+    let email = data.email?.toLowerCase()
     data.email = email
 
     if (values.first_name === '') {
       showErrorNotification('First name is required.')
     } else if (values.last_name === '') {
       showErrorNotification('Last name is required.')
-    } else if (values.email === '') {
-      showErrorNotification('Email is required.')
-    } else if (values.password === '') {
-      showErrorNotification('Password is required.')
-    } else if (values.password !== values.confirmPassword) {
-      showErrorNotification('Password does not match.')
+    } else if (values.phone_number === '') {
+      showErrorNotification('Phone is required.')
     } else {
       processNewUser(data)
     }
@@ -268,12 +157,11 @@ const LoginScreen: React.FC = ({ navigation, route }: any) => {
     content = (
       <>
         <KeyboardAwareScrollView>
-          <View style={styles(theme).content}>
+          <View style={styles().content}>
             <View style={{ display: 'flex', flexDirection: 'row' }}>
               <TouchableOpacity onPress={navigateBack}>
                 <LeftArrow />
               </TouchableOpacity>
-              <Logo />
             </View>
             <View>
               <Text style={styles().registerInContainer}>
@@ -287,9 +175,7 @@ const LoginScreen: React.FC = ({ navigation, route }: any) => {
               </Text>
               <Text style={styles().registerInDescription}>
                 {step == 2 ? (
-                  <Text>
-                    Please enter the code sent to your registered email{' '}
-                  </Text>
+                  <Text>Please enter the code sent to your phone</Text>
                 ) : (
                   <Text></Text>
                 )}
@@ -301,7 +187,6 @@ const LoginScreen: React.FC = ({ navigation, route }: any) => {
                 formValues={loginDetailData}
                 loadingUserLogin={loadingUserLogin}
                 onNext={goToStep}
-                terms={onTermAndCondtion}
               />
             )}
             {step == 2 && (
@@ -310,7 +195,6 @@ const LoginScreen: React.FC = ({ navigation, route }: any) => {
                 formValues={validationCodeValues}
                 loadingUserLogin={loadingUserLogin}
                 onNext={goToStep}
-                onOtpVerified={otpVerifiedSuccess}
               />
             )}
           </View>
@@ -319,14 +203,7 @@ const LoginScreen: React.FC = ({ navigation, route }: any) => {
     )
   }
 
-  return (
-    <View style={styles(theme).container}>
-      <ImageBackground source={bgImage} style={styles().backgroundImage}>
-        {content}
-        <TermsAndConditionsBottomSheet ref={termsAndConditionsBottomSheetRef} />
-      </ImageBackground>
-    </View>
-  )
+  return <View style={styles().container}>{content}</View>
 }
 
 export default LoginScreen

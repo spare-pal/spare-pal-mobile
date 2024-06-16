@@ -49,7 +49,7 @@ const ProfileScreen: React.FC = ({ navigation }: any) => {
   const dashboard = useSelector((state) => state.user.dashboard)
 
   const { profile } = user
-
+  console.log(profile)
   const avatarBackground = require('@app/assets/images/canvaspurple.png')
   const defaultAvatar = require('@app/assets/images/default_user.jpg')
 
@@ -74,7 +74,7 @@ const ProfileScreen: React.FC = ({ navigation }: any) => {
             dispatch(getPurchasedBundles())
           }
         },
-        onFail: () => {},
+        onFail: (err) => {},
       }
       dispatch(getUserProfile(userProfile))
       dispatch(getStripeBalance())
@@ -147,35 +147,6 @@ const ProfileScreen: React.FC = ({ navigation }: any) => {
         }
       )
     }
-  }
-
-  const deleteCurrentUserProfile = () => {
-    if (
-      user.profile !== null &&
-      user.profile !== undefined &&
-      user.profile !== ''
-    ) {
-      dispatch(deleteProfile())
-      logOut()
-      profileDeletedNotification()
-    }
-  }
-
-  const openDeleteConfirmation = () => {
-    Alert.alert('Alert', 'Are you sure you want to delete your profile?', [
-      {
-        text: 'Cancel',
-        onPress: () => {},
-        style: 'cancel',
-      },
-      {
-        text: 'Yes',
-        style: 'destructive',
-        onPress: () => {
-          deleteCurrentUserProfile()
-        },
-      },
-    ])
   }
 
   const checkNameValue = (name: string | string[]) => {
@@ -350,7 +321,6 @@ const ProfileScreen: React.FC = ({ navigation }: any) => {
           >
             <View style={styles().headerColumn}>
               <TouchableOpacity>
-                {/* <TouchableOpacity onPress={() => onCameraPressed()}> */}
                 <Image style={styles().userImage} source={avatar} />
               </TouchableOpacity>
               <Text style={styles().userNameText}>{`${
@@ -362,24 +332,6 @@ const ProfileScreen: React.FC = ({ navigation }: any) => {
                 </View>
               </View>
             </View>
-            {/* <View
-              style={{
-                alignSelf: 'flex-end',
-                position: 'absolute',
-                right: 2,
-                bottom: 2
-              }}>
-              <Button
-                onPress={() => onSaveProfile()}
-                disabled={!avatarUpdated}
-              >
-                <Icon
-                  type="FontAwesome"
-                  name={"check"}
-                  style={{ color: ThemeStatic.accent }}
-                />
-              </Button>
-            </View> */}
           </ImageBackground>
         </View>
       )
@@ -401,166 +353,6 @@ const ProfileScreen: React.FC = ({ navigation }: any) => {
     <Fragment>
       <ScrollView>
         <View style={{ padding: 15 }}>
-          <Text style={styles().noteText}>SELLING</Text>
-          <Divider />
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}
-          >
-            <Text style={{ marginStart: 10, fontSize: 16 }}>Balance</Text>
-            <Text style={styles().balanceText}>{stripeAvailableBalance()}</Text>
-          </View>
-          <Divider />
-          {stripePendingBalance > 0 && (
-            <>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <Text style={{ marginStart: 10, fontSize: 16 }}>
-                  Pending Credit
-                </Text>
-                <Text style={styles().balanceText}>
-                  {stripePendingBalance()}
-                </Text>
-              </View>
-              <Divider />
-            </>
-          )}
-          <TouchableOpacity
-            onPress={() =>
-              is_stripe_connected
-                ? stripeAccountLinkModal()
-                : onPressConnectStripe()
-            }
-            style={{
-              alignItems: 'center',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}
-          >
-            <View style={{ marginStart: 10 }}>
-              <Text style={styles().balanceText}>Update Selling Details</Text>
-              <Text style={styles().noteText}>
-                {sellingDetailsRequired()
-                  ? sellingDetailsRequired()
-                  : 'Ready to sell!'}
-              </Text>
-            </View>
-            {sellingDetailsRequired() != false ? (
-              <Badge
-                backgroundColor={'red.600'}
-                style={styles().centeredBadgeText}
-              >
-                <MaterialIcons name='error-outline' size={25} color={'#fff'} />
-              </Badge>
-            ) : (
-              <Badge
-                backgroundColor={'green.500'}
-                style={styles().centeredBadgeText}
-              >
-                <MaterialIcons name='check' size={25} color={'#fff'} />
-              </Badge>
-            )}
-          </TouchableOpacity>
-          <Divider />
-
-          {is_stripe_connected && (
-            <>
-              <TouchableOpacity
-                onPress={() => stripeAccountLinkModal()}
-                style={{
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <View style={{ marginStart: 10 }}>
-                  <Text style={styles().balanceText}>Bank Information</Text>
-                  <Text style={styles().noteText}>{bankInfo()}</Text>
-                </View>
-                {bankAccountLinked() ? (
-                  <Badge
-                    backgroundColor={'green.500'}
-                    style={styles().centeredBadgeText}
-                  >
-                    <MaterialIcons name='check' size={25} color={'#fff'} />
-                  </Badge>
-                ) : (
-                  <Badge
-                    backgroundColor={'red.600'}
-                    style={styles().centeredBadgeText}
-                  >
-                    <MaterialIcons
-                      size={25}
-                      color={'#fff'}
-                      name='error-outline'
-                    />
-                  </Badge>
-                )}
-              </TouchableOpacity>
-              <Divider />
-            </>
-          )}
-
-          {is_stripe_connected && (
-            <>
-              <TouchableOpacity
-                onPress={() => navigate('App')}
-                style={{
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <View style={{ marginStart: 10 }}>
-                  <Text style={styles().balanceText}>
-                    Update Ship From Address
-                  </Text>
-                  <Text style={styles().noteText}>
-                    {(profile && profile.address_line_1) || ''}{' '}
-                  </Text>
-                </View>
-                {profile && profile.address_line_1 !== null ? (
-                  <Badge
-                    backgroundColor={'green.500'}
-                    style={styles().centeredBadgeText}
-                  >
-                    <MaterialIcons name='check' size={25} color={'#fff'} />
-                  </Badge>
-                ) : (
-                  <Badge
-                    backgroundColor={'red.600'}
-                    style={styles().centeredBadgeText}
-                  >
-                    <MaterialIcons
-                      name='error-outline'
-                      size={25}
-                      color={'#fff'}
-                    />
-                  </Badge>
-                )}
-              </TouchableOpacity>
-              <Divider />
-            </>
-          )}
-
-          {is_stripe_connected !== false && (
-            <>
-              <TouchableOpacity onPress={() => expressDashboardData()}>
-                <Text style={[{ marginStart: 10 }, styles().balanceText]}>
-                  Sales Dashboard
-                </Text>
-              </TouchableOpacity>
-              <Divider />
-            </>
-          )}
-          {/* {is_stripe_connected > 0 && <Text>Sales Dashboard</Text>} */}
-
           <Text style={styles().noteText}>BUYING</Text>
           <Divider />
           <TouchableOpacity
@@ -583,27 +375,8 @@ const ProfileScreen: React.FC = ({ navigation }: any) => {
           </TouchableOpacity>
           <Divider />
 
-          <>
-            <TouchableOpacity onPress={() => navigate('SellingPurchaseScreen')}>
-              <Text style={[{ marginStart: 10 }, styles().balanceText]}>
-                Sellings Details
-              </Text>
-            </TouchableOpacity>
-            <Divider />
-          </>
-
-          <Text style={styles().noteText}>SUPPORT</Text>
+          <Text style={styles().noteText}>ACCOUNT</Text>
           <Divider />
-
-          <>
-            <TouchableOpacity onPress={onResolutionSheetRefOpen}>
-              <Text style={[{ marginStart: 10 }, styles().balanceText]}>
-                Resoultion Center
-              </Text>
-            </TouchableOpacity>
-            <Divider />
-          </>
-
           <>
             <TouchableOpacity onPress={logOut}>
               <Text style={[{ marginStart: 10 }, styles().balanceText]}>
@@ -612,26 +385,7 @@ const ProfileScreen: React.FC = ({ navigation }: any) => {
             </TouchableOpacity>
             <Divider />
           </>
-
-          <Text style={styles().noteText}>ACCOUNT</Text>
-          <Divider />
-
-          <>
-            <TouchableOpacity onPress={openDeleteConfirmation}>
-              <Text
-                style={[
-                  { marginStart: 10 },
-                  styles().balanceText,
-                  { color: '#E30303' },
-                ]}
-              >
-                Delete Profile
-              </Text>
-            </TouchableOpacity>
-            <Divider />
-          </>
         </View>
-        {/* </List> */}
       </ScrollView>
     </Fragment>
   )
@@ -643,25 +397,6 @@ const ProfileScreen: React.FC = ({ navigation }: any) => {
           {renderHeader()}
           {content}
         </ScrollView>
-        <StripeConnectSheet ref={BottomSheetRef} onSheetlose={modalClose} />
-        <WebViewSheet
-          ref={ResolutionCenterSheetRef}
-          onSheetlose={onResolutionSheetRefClose}
-          webViewUrl={'https://bynde.freshdesk.com/support/home'}
-        />
-        <WebViewSheet
-          ref={expressUrlRef}
-          onSheetlose={onExpressDashboardClose}
-          webViewUrl={
-            dashboard && dashboard.express_dashboard
-              ? dashboard.express_dashboard
-              : null
-          }
-        />
-        <StripeConnectSheet
-          ref={stripeAccountLinkRef}
-          onSheetlose={onStripeAccountLinkClose}
-        />
       </View>
     )
   }
@@ -732,7 +467,7 @@ const styles = (theme = {}) =>
         ios: {
           alignItems: 'center',
           elevation: 1,
-          marginTop: -1,
+          marginTop: 5,
         },
         android: {
           alignItems: 'center',

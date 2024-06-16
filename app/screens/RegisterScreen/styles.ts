@@ -1,7 +1,6 @@
-import { StyleSheet, Dimensions, Platform } from 'react-native'
 import { ThemeStatic, Typography } from '@app/theme'
-import { isIphoneX } from '@app/utils/common'
 import { ThemeColors } from '@app/types/theme'
+import { Dimensions, Platform, StyleSheet } from 'react-native'
 import {
   responsiveHeight,
   responsiveWidth,
@@ -213,13 +212,15 @@ export const styles = (theme = {} as ThemeColors) =>
       marginHorizontal: 7,
     },
     registerInContainer: {
-      color: 'white',
+      color: ThemeStatic.accentLight,
+      alignSelf: 'flex-end',
       fontSize: 25,
       marginTop: 15,
       fontWeight: 'bold',
     },
     registerInDescription: {
-      color: 'white',
+      color: ThemeStatic.accentLight,
+      alignSelf: 'flex-end',
       fontSize: 17,
       marginTop: 15,
       paddingBottom: 25,

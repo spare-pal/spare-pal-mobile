@@ -1,33 +1,19 @@
-import React, { useContext, useRef, useEffect, useState } from 'react'
-import {
-  View,
-  Animated,
-  TouchableOpacity,
-  Platform,
-  Text,
-  TextInput,
-} from 'react-native'
-import { useNavigation } from '@react-navigation/native'
-import { Button } from 'react-native-elements'
-import { Formik } from 'formik'
-import { ThemeStatic } from '@app/theme'
 import { AppContext } from '@app/context'
-import { signUpFirstValidationSchema } from '@app/utils/validation'
-import { styles } from '../styles'
-import { ISignUpStepFirstValues } from '../interface'
-import { FontAwesome, Zocial, MaterialIcons } from '@expo/vector-icons'
-import Separator from '../../../components/common/Separator'
-import SocialButton from '../../../components/common/SocialButton'
-import { welcomeNotification } from '../../../utils/notifications'
-
+import { ThemeStatic } from '@app/theme'
 import { signOut } from '@app/utils/authentication'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  fbLogIn,
-  loginWithApple,
-  signInAsync,
-  signInWithGoogleAsync,
-} from '../../../utils/commonFuntions'
+import { signUpFirstValidationSchema } from '@app/utils/validation'
+import { FontAwesome, MaterialIcons, Zocial } from '@expo/vector-icons'
+import { useNavigation } from '@react-navigation/native'
+import { Formik } from 'formik'
+import React, { useContext, useEffect, useRef, useState } from 'react'
+import { Animated, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Button } from 'react-native-elements'
+import { useSelector } from 'react-redux'
+import { welcomeNotification } from '../../../utils/notifications'
+import { ISignUpStepFirstValues } from '../interface'
+import { styles } from '../styles'
+import PhoneInput from 'react-native-phone-number-input'
+
 interface Step1Interface {
   step: number
   loadingUserLogin: boolean
@@ -47,12 +33,9 @@ const Step1: React.FC<Step1Interface> = ({
   const opacity = new Animated.Value(0)
 
   const emailRef = useRef(null)
-  const passRef = useRef(null)
-  const passRef2 = useRef(null)
-  const [email, setEmail] = useState<string>(null)
-  const [loadingSignUp, setLoadingSignUp] = useState<boolean>(false)
-
-  const dispatch = useDispatch()
+  const [email, setEmail] = useState<string | null>(null)
+  const [phone, setPhone] = useState<string>('')
+  const phoneNumberRef = useRef(null)
 
   const user = useSelector((state) => state.user)
 
@@ -73,15 +56,6 @@ const Step1: React.FC<Step1Interface> = ({
       useNativeDriver: true,
     }).start()
   }, [step])
-
-  const saveButtonTranslationX = opacity.interpolate({
-    inputRange: [0, 1],
-    outputRange: [100, 0],
-  })
-
-  const goToRegisterScreen = () => {
-    navigate('RegisterScreen')
-  }
 
   const navigateToApp = async (token: string) => {
     try {
@@ -205,20 +179,6 @@ const Step1: React.FC<Step1Interface> = ({
                     </View>
                   </View>
                   <View style={styles().EmailField}>
-                    {/* {errors.email && touched.email ? (
-                      <Text
-                        style={[
-                          styles().sectionText,
-                          { color: ThemeStatic.badge },
-                        ]}
-                      >
-                        {errors.email}
-                      </Text>
-                    ) : (
-                      <Text style={styles().sectionText}>
-                        {values.email && 'Email'}
-                      </Text>
-                    )} */}
                     <View style={styles().textField}>
                       <Zocial name='email' style={styles().icons} />
                       <TextInput
@@ -239,148 +199,59 @@ const Step1: React.FC<Step1Interface> = ({
                       />
                     </View>
                   </View>
-                  <View style={styles().PasswordField}>
-                    {/* {errors.password && touched.password ? (
-                      <Text
-                        style={[
-                          styles().sectionText,
-                          { color: ThemeStatic.badge },
-                        ]}
-                      >
-                        {errors.password}
-                      </Text>
-                    ) : (
-                      <Text style={styles().sectionText}>
-                        {values.password && 'Password'}
-                      </Text>
-                    )} */}
-                    <View style={styles().textField}>
-                      <MaterialIcons name='lock' style={styles().icons} />
-                      <TextInput
-                        ref={passRef}
-                        returnKeyType={'next'}
-                        onSubmitEditing={() => {
-                          passRef.current._root.focus()
-                        }}
-                        blurOnSubmit={false}
-                        secureTextEntry
-                        textContentType='oneTimeCode'
-                        style={styles().input}
-                        placeholderTextColor={ThemeStatic.text02}
-                        value={values.password}
-                        returnKeyType='next'
-                        onChangeText={handleChange('password')}
-                        placeholder={'Password'}
-                        accessibilityLabel={'Register_Password'}
-                      />
-                    </View>
-                    {/* {errors.confirmPassword && touched.password ? (
-                      <Text
-                        style={[
-                          styles().sectionText,
-                          { color: ThemeStatic.badge },
-                        ]}
-                      >
-                        {errors.confirmPassword}
-                      </Text>
-                    ) : (
-                      <Text style={styles().sectionText}>
-                        {values.confirmPassword && 'ConfirmPassword'}
-                      </Text>
-                    )} */}
-                    <View style={styles().textField}>
-                      <MaterialIcons name='lock' style={styles().icons} />
-                      <TextInput
-                        ref={passRef2}
-                        secureTextEntry
-                        textContentType='oneTimeCode'
-                        style={styles().input}
-                        placeholderTextColor={ThemeStatic.text02}
-                        value={values.confirmPassword}
-                        returnKeyType='next'
-                        onChangeText={handleChange('confirmPassword')}
-                        placeholder={'Confirm Password'}
-                        onSubmitEditing={handleSubmit}
-                        accessibilityLabel={'Register_ConfirmPass'}
-                        testID={'Register_ConfirmPassword'}
-                      />
-                    </View>
+                  <View
+                    style={{
+                      margin: 20,
+                    }}
+                  >
+                    <PhoneInput
+                      ref={phoneNumberRef}
+                      autoFocus
+                      defaultCode='ET'
+                      layout='first'
+                      onChangeFormattedText={(text) => {
+                        setPhone(text)
+                      }}
+                      flagButtonStyle={{
+                        backgroundColor: '#EFEFEF',
+                        borderRadius: 10,
+                        marginLeft: 10,
+                        marginRight: -5,
+                      }}
+                      containerStyle={{
+                        width: '100%',
+                        borderRadius: 10,
+                      }}
+                      textContainerStyle={{
+                        backgroundColor: '#EFEFEF',
+                        borderRadius: 10,
+                        marginLeft: -10,
+                      }}
+                      value={phone}
+                      placeholder={'Phone Number'}
+                    />
                   </View>
 
                   <Button
                     onPress={() => {
-                      onNext(1, values)
+                      onNext(1, { ...values, phone_number: phone })
                     }}
                     loading={loadingUserLogin}
                     fontWeight='bold'
                     fontFamily='sans-serif'
                     buttonStyle={[
                       styles().button,
-                      { backgroundColor: '#846BE2' },
+                      { backgroundColor: ThemeStatic.accent },
                     ]}
                     title='Sign Up'
                     accessibilityLabel={'Register_SignUp'}
                   />
-                  <View
-                    style={{ paddingTop: 8, alignSelf: 'center', width: '80%' }}
-                  >
-                    <Text>By signing up you accept our {''}</Text>
-                    <View style={{ flexDirection: 'row', alignSelf: 'center' }}>
-                      <TouchableOpacity onPress={terms}>
-                        <Text style={styles(theme).color}>
-                          terms of services
-                        </Text>
-                      </TouchableOpacity>
-                      <Text> and {''}</Text>
-                      <TouchableOpacity onPress={terms}>
-                        <Text style={styles(theme).color}>privacy policy</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
                 </View>
               )}
             </Formik>
           </View>
         </View>
       </Animated.View>
-      <View style={styles().separatorStyle}>
-        <Separator />
-      </View>
-      <View style={[styles(theme).roundedView]}>
-        <View style={[styles().cardViewStyle, { flexDirection: 'row' }]}>
-          {Platform.OS !== 'android' && (
-            <SocialButton
-              onPress={() => loginWithApple(dispatch, navigate)}
-              image={require('@app/assets/apple.png')}
-              imageStyle={{}}
-              buttonViewStyle={{ backgroundColor: '#000' }}
-              testIDs={'Register_AppleLogin'}
-            />
-          )}
-          <SocialButton
-            onPress={() => signInWithGoogleAsync(dispatch, navigate)}
-            image={require('@app/assets/google.png')}
-            imageStyle={{}}
-            buttonViewStyle={{ backgroundColor: '#E5664F' }}
-            testIDs={'Register_GoogleLogin'}
-          />
-          {/* <SocialButton
-            onPress={() => fbLogIn(dispatch, navigate)}]
-            image={require('@app/assets/facebook.png')}
-            imageStyle={{}}
-            buttonViewStyle={{ backgroundColor: '#3B5998' }}
-            testIDs={'Register_FbLogin'}
-          /> */}
-          {Platform.OS === 'android' && (
-            <SocialButton
-              onPress={goToRegisterScreen}
-              imageStyle={{}}
-              image={require('@app/assets/email.png')}
-              buttonViewStyle={{}}
-            />
-          )}
-        </View>
-      </View>
     </View>
   )
 }

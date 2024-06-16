@@ -1,14 +1,12 @@
 import { IconSizes } from '@app/constants'
-import { AppContext } from '@app/context'
+import { ThemeStatic } from '@app/theme'
 import { Feather, FontAwesome5 } from '@expo/vector-icons'
-import React, { useContext } from 'react'
+import React from 'react'
 import { View } from 'react-native'
 import { Badge } from 'react-native-elements'
 import { useSelector } from 'react-redux'
-import { ThemeStatic } from '../../theme'
 
 const TabIcon = ({ route, isActive }) => {
-  const { theme } = useContext(AppContext)
   const carts = useSelector((state) => state.cart.carts)
 
   const user = useSelector((state) => state.user)
@@ -20,7 +18,7 @@ const TabIcon = ({ route, isActive }) => {
       return (
         <Feather
           name='shopping-bag'
-          color={isActive ? ThemeStatic.accent : theme.text02}
+          color={isActive ? ThemeStatic.accent : ThemeStatic.text02}
           size={IconSizes.x6}
           accessibilityLabel={route}
         />
@@ -30,7 +28,7 @@ const TabIcon = ({ route, isActive }) => {
         <View>
           <FontAwesome5
             name='shopping-cart'
-            color={isActive ? ThemeStatic.accent : theme.text02}
+            color={isActive ? ThemeStatic.accent : ThemeStatic.text02}
             size={IconSizes.x6}
             accessibilityLabel={route}
           />
@@ -38,37 +36,19 @@ const TabIcon = ({ route, isActive }) => {
             <Badge
               status='error'
               containerStyle={{ position: 'absolute', top: -4, right: -4 }}
-            />
+              textStyle={{ fontSize: 10 }}
+            >
+              {carts.length}
+            </Badge>
           )}
         </View>
-      )
-
-    case 'SellingScreen':
-      return (
-        <FontAwesome5
-          light
-          name='gifts'
-          color={isActive ? ThemeStatic.accent : theme.text02}
-          size={IconSizes.x6}
-          accessibilityLabel={route}
-        />
-      )
-    case 'CameraScreen':
-      return (
-        <FontAwesome5
-          light
-          name='camera'
-          color={isActive ? ThemeStatic.accent : theme.text02}
-          size={IconSizes.x6}
-          accessibilityLabel={route}
-        />
       )
     case 'ProfileScreen':
       return (
         <FontAwesome5
           light
           name='user-circle'
-          color={isActive ? ThemeStatic.accent : theme.text02}
+          color={isActive ? ThemeStatic.accent : ThemeStatic.text02}
           size={IconSizes.x6}
           accessibilityLabel={route}
         >
@@ -84,7 +64,6 @@ const TabIcon = ({ route, isActive }) => {
             )}
         </FontAwesome5>
       )
-
     default:
       return null
   }

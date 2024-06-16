@@ -1,9 +1,9 @@
+import { MaterialIcons } from '@expo/vector-icons'
 import React from 'react'
-import { View, Text, Image, TouchableOpacity } from 'react-native'
-import FeedCarousel from '../../common/FeedCarousel'
+import { Text, TouchableOpacity, View } from 'react-native'
 import { Modalize } from 'react-native-modalize'
 import { ThemeStatic } from '../../../theme'
-import { MaterialIcons } from '@expo/vector-icons'
+import FeedCarousel from '../../common/FeedCarousel'
 
 const ItemDetailBottomSheet: React.FC<any> = React.forwardRef(
   ({ item, onAddCart }, ref) => {

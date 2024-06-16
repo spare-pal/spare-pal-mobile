@@ -14,9 +14,49 @@ const initialState = {
 }
 
 export default (state = initialState, action) => {
-  let filteredData
-  let product
   switch (action.type) {
+    case actionType.ADD_CART_ITEM: {
+      const newItem = action.payload.item
+      const prevItem = state.carts.find((prod) => prod.id === newItem.id)
+      if (prevItem) {
+        return {
+          ...state,
+          carts: state.carts.map((item) =>
+            item.id === newItem.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          ),
+        }
+      }
+      return {
+        ...state,
+        carts: [...state.carts, { item: newItem, quantity: 1, id: newItem.id }],
+      }
+    }
+    case actionType.CLEAR_CART_ITEM: {
+      const id = action.payload.item.id
+      return {
+        ...state,
+        carts: state.carts.filter((item) => item.id !== id),
+      }
+    }
+    case actionType.REMOVE_CART_ITEM: {
+      const id = action.payload.item.id
+      const prevItem = state.carts.find((prod) => prod.id === id)
+      if (prevItem.quantity === 1) {
+        return {
+          ...state,
+          carts: state.carts.filter((item) => item.id !== id),
+        }
+      }
+      return {
+        ...state,
+        carts: state.carts.map((item) =>
+          item.id === id ? { ...item, quantity: item.quantity - 1 } : item
+        ),
+      }
+    }
+
     case actionType.DELETE_LOCAL_CART_ITEM: {
       return {
         ...state,
@@ -71,8 +111,8 @@ export default (state = initialState, action) => {
           carts.length === cartItems.length
             ? carts
             : cartItems.length > 0
-            ? cartItems
-            : [],
+              ? cartItems
+              : [],
       }
     }
     case actionType.GET_CART_ERROR: {
@@ -81,17 +121,6 @@ export default (state = initialState, action) => {
         success: false,
         carts: [],
         errorGetCart: action.payload.error,
-      }
-    }
-    case actionType.ADD_NEW_CART_ITEM: {
-      const newItem = action.payload.newItem
-      const isItemAlreadyInCart = state.carts.some(
-        (cartItem) => cartItem.listing.id === newItem.listing.id
-      )
-
-      return {
-        ...state,
-        carts: isItemAlreadyInCart ? state.carts : [...state.carts, newItem],
       }
     }
     case actionType.ADD_NEW_CART_ITEM_SUCCESS: {

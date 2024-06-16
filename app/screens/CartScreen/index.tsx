@@ -1,8 +1,7 @@
-import { Routes } from '@app/constants'
-import LoadingIndicator from '@app/layout/misc/LoadingIndicator'
+import { addToCart, clearItem, removeItem } from '@app/actions/cart'
 import { ThemeStatic } from '@app/theme'
 import { ThemeColors } from '@app/types/theme'
-import { Feather, FontAwesome } from '@expo/vector-icons'
+import { Feather, MaterialIcons } from '@expo/vector-icons'
 import {
   Badge,
   Box,
@@ -24,210 +23,142 @@ import {
   View,
 } from 'react-native'
 import { Col, Row } from 'react-native-easy-grid'
-import Swipeable from 'react-native-gesture-handler/Swipeable'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import ListEmptyComponent from '../../layout/misc/ListEmptyComponent'
-import { getImageUrl } from '../../utils/common'
 
 const screenWidth = Math.round(Dimensions.get('window').width)
 
 const CartScreen: React.FC = ({ navigation }: any) => {
-  const { navigate } = navigation
-  const cartData = useSelector((state) => state.cart)
-  const { carts, loading } = cartData
+  const { carts } = useSelector((state) => state.cart)
+  const dispatch = useDispatch()
+
+  const clearItemFromCart = (item: any) => {
+    dispatch(clearItem(item))
+  }
+
+  const removeItemFromCart = (item: any) => {
+    dispatch(removeItem(item))
+  }
+
+  const addItemToCart = (item: any) => {
+    dispatch(addToCart(item))
+  }
 
   const error = false
-  const tax = 0.0
-
   const calculateTotal = () => {
-    if (carts && !carts.detail && carts.length > 0) {
-      let totalPrice =
-        tax +
-        carts.reduce(
-          (total: number, item: any) =>
-            item &&
-            item.listing &&
-            item.listing.buyer_price &&
-            total +
-              parseFloat(
-                item.listing.status == 'published'
-                  ? item.listing.buyer_price
-                  : 0
-              ),
-          0.0
-        )
-
+    if (carts && carts.length > 0) {
+      const totalPrice = carts.reduce(
+        (acc, cartItem) => cartItem.quantity * cartItem.item.price + acc,
+        0
+      )
       return totalPrice.toFixed(2)
     } else {
       return 0.0
     }
   }
 
-  const RightActions = (progress, item) => {
+  const renderCartItem = ({ item: data }) => {
+    const { id, quantity, item } = data
+    const { name, Images, price } = item
     return (
       <>
-        <View
+        <Card
           style={{
-            backgroundColor: 'red',
-            justifyContent: 'center',
-            marginTop: 5,
-            marginBottom: 5,
-            marginLeft: 5,
+            borderWidth: 1,
+            shadowOpacity: 1,
+            borderRadius: 10,
+            shadowRadius: 12,
+            marginVertical: 5,
+            shadowColor: 'black',
+            alignItems: 'center',
+            marginHorizontal: 12,
+            borderColor: 'lightgray',
+            backgroundColor: 'white',
+            shadowOffset: { width: 1, height: 20 },
           }}
         >
-          <TouchableOpacity
-            onPress={() => onDeleteCart(item.listing.id)}
-            style={{ backgroundColor: 'transparent' }}
-          >
-            <FontAwesome
-              type='FontAwesome'
-              name='trash-o'
-              size={30}
-              style={{
-                color: ThemeStatic.white,
-                fontSize: 30,
-                paddingHorizontal: 20,
-                fontWeight: 'bold',
-              }}
-            />
-            <Text
-              style={{
-                color: ThemeStatic.white,
-                fontSize: 15,
-                paddingHorizontal: 10,
-                fontWeight: 'bold',
-              }}
-            >
-              Delete
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View
-          style={{
-            backgroundColor: 'green',
-            justifyContent: 'center',
-            margin: 5,
-          }}
-        >
-          <TouchableOpacity
-            onPress={() =>
-              navigate(Routes.ListingDetail, { data: item.listing, index: 0 })
-            }
-            style={{ backgroundColor: 'transparent' }}
-          >
-            <FontAwesome
-              size={28}
-              type='FontAwesome'
-              name='arrow-right'
-              style={{
-                color: ThemeStatic.white,
-                fontSize: 28,
-                paddingHorizontal: 20,
-              }}
-            />
-            <Text
-              style={{
-                color: ThemeStatic.white,
-                fontSize: 15,
-                paddingHorizontal: 15,
-                fontWeight: 'bold',
-              }}
-            >
-              View
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </>
-    )
-  }
-
-  const renderCartItem = ({ item, index }) => {
-    const { id, title, buyer_price, items, status } = item.listing
-
-    return (
-      <>
-        <Swipeable
-          renderRightActions={(progress) => RightActions(progress, item)}
-        >
-          <Card
-            style={{
-              borderWidth: 1,
-              shadowOpacity: 1,
-              borderRadius: 10,
-              shadowRadius: 12,
-              marginVertical: 5,
-              shadowColor: 'black',
-              alignItems: 'center',
-              marginHorizontal: 12,
-              borderColor: 'lightgray',
-              backgroundColor: 'white',
-              shadowOffset: { width: 1, height: 20 },
-            }}
-          >
-            <Row>
-              <Col>
-                <View style={styles().imageContainer}>
-                  {
-                    <>
-                      <Badge
-                        style={{
-                          backgroundColor: ThemeStatic.accentLight,
-                          position: 'absolute',
-                          top: -12,
-                          left: -5,
-                          zIndex: 2,
-                        }}
-                      >
-                        <Text style={{ color: '#333' }}>+{items.length}</Text>
-                      </Badge>
-                      <Image
-                        key={index}
-                        style={styles().paginationImageStyle}
-                        source={{ uri: getImageUrl(items, true) }}
-                      />
-                    </>
-                  }
-                </View>
-              </Col>
-              <Col>
-                <Text style={styles().titleText}>{title}</Text>
-                <Text style={styles().subtitleText}>{items.length} items</Text>
-              </Col>
-              <Col
+          <Row>
+            <Col>
+              <View style={styles().imageContainer}>
+                <Image
+                  key={id}
+                  style={styles().paginationImageStyle}
+                  source={{ uri: Images[0].url }}
+                />
+              </View>
+            </Col>
+            <Col>
+              <Text style={styles().titleText}>{name}</Text>
+              <Text style={styles().subtitleText}>{quantity} items</Text>
+              <View
                 style={{
-                  flex: 0.5,
+                  flex: 1,
                   flexDirection: 'row',
-                  alignItems: 'center',
-                  alignContent: 'flex-end',
                 }}
               >
-                <View style={{ display: 'flex', flexDirection: 'column' }}>
-                  <View style={styles().xbutton}>
-                    <TouchableOpacity
-                      onPress={() => onDeleteItem(item.listing.id)}
-                    >
-                      <Text style={styles().textStyle}>X</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View
-                    style={{
-                      flex: 1,
-                      flexDirection: 'column',
-                      marginTop: 35,
-                    }}
-                  >
-                    <Text style={styles().rowPriceText}>
-                      ${parseFloat(buyer_price).toFixed(2)}
+                <Button
+                  onPress={() => removeItemFromCart(item)}
+                  style={{
+                    width: 35,
+                    backgroundColor: ThemeStatic.black,
+                  }}
+                >
+                  -
+                </Button>
+                <Badge
+                  style={{
+                    width: 50,
+                    backgroundColor: 'white',
+                    borderColor: ThemeStatic.placeholder,
+                  }}
+                >
+                  {quantity}
+                </Badge>
+                <Button
+                  onPress={() => addItemToCart(item)}
+                  style={{
+                    width: 35,
+                    backgroundColor: ThemeStatic.black,
+                  }}
+                >
+                  +
+                </Button>
+              </View>
+            </Col>
+            <Col
+              style={{
+                flex: 0.5,
+                flexDirection: 'row',
+                alignItems: 'center',
+                alignContent: 'flex-end',
+              }}
+            >
+              <View style={{ display: 'flex', flexDirection: 'column' }}>
+                <View style={styles().xbutton}>
+                  <TouchableOpacity onPress={() => clearItemFromCart(item)}>
+                    <Text style={styles().textStyle}>
+                      <MaterialIcons
+                        name='delete-forever'
+                        style={{ fontSize: 24, color: ThemeStatic.accent }}
+                      />
                     </Text>
-                  </View>
+                  </TouchableOpacity>
                 </View>
-              </Col>
-            </Row>
-            {status !== 'published' && (
-              <Text style={styles().errorstyle}>{'No Longer Available'}</Text>
-            )}
-          </Card>
-        </Swipeable>
+                <View
+                  style={{
+                    flex: 1,
+                    flexDirection: 'column',
+                    marginTop: 35,
+                  }}
+                >
+                  <Text style={styles().rowPriceText}>
+                    {parseFloat(quantity * price).toFixed(2)}
+                  </Text>
+                </View>
+              </View>
+            </Col>
+          </Row>
+        </Card>
       </>
     )
   }
@@ -252,36 +183,20 @@ const CartScreen: React.FC = ({ navigation }: any) => {
         >
           <Row>
             <Col>
-              <Text style={styles().footerText}>SHIPPING</Text>
-            </Col>
-            <Col
-              style={{
-                width: 100,
-                alignItems: 'flex-end',
-                alignSelf: 'center',
-              }}
-            >
-              <Text style={{ fontSize: 12, color: 'green' }}>FREE</Text>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
               <Text style={styles().footerText}>TOTAL</Text>
             </Col>
             <Col
               style={{
-                width: 100,
                 alignItems: 'flex-end',
                 alignSelf: 'center',
               }}
             >
-              <Text style={styles().totalText}>${calculateTotal()}</Text>
+              <Text style={styles().totalText}>ETB {calculateTotal()}</Text>
             </Col>
           </Row>
         </Card>
         <Button
           style={{ margin: 16, backgroundColor: '#5CB85C' }}
-          full
           disabled={carts && carts.length > 0 ? false : true}
         >
           <Text style={{ color: '#FFFFFF' }}>Checkout</Text>
@@ -312,38 +227,34 @@ const CartScreen: React.FC = ({ navigation }: any) => {
           </Text>
         </HStack>
       </HStack>
-      {loading ? (
-        <LoadingIndicator />
-      ) : (
-        <FlatList
-          extraData={carts.length}
-          bounces={false}
-          showsVerticalScrollIndicator={false}
-          data={carts && carts.length > 0 ? carts : []}
-          renderItem={renderCartItem}
-          style={styles().container}
-          ListEmptyComponent={() => (
-            <View>
-              <Image
-                source={require('../../../assets/images/empty-cart-image.png')}
-                style={{
-                  alignSelf: 'center',
-                  width: 100,
-                  aspectRatio: '1',
-                  borderRadius: 20,
-                }}
-              />
-              <ListEmptyComponent
-                placeholder='Add items here from the Shop screen!'
-                placeholderStyle={styles().placeholderStyle}
-                spacing={10}
-              />
-            </View>
-          )}
-          ListFooterComponent={summary}
-          keyExtractor={(item) => item.listing.id.toString()}
-        />
-      )}
+      <FlatList
+        extraData={carts.length}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+        data={carts && carts.length > 0 ? carts : []}
+        renderItem={renderCartItem}
+        style={styles().container}
+        ListEmptyComponent={() => (
+          <View>
+            <Image
+              source={require('../../../assets/images/empty-cart-image.png')}
+              style={{
+                alignSelf: 'center',
+                width: 100,
+                aspectRatio: '1',
+                borderRadius: 20,
+              }}
+            />
+            <ListEmptyComponent
+              placeholder='Add items here from the Shop screen!'
+              placeholderStyle={styles().placeholderStyle}
+              spacing={10}
+            />
+          </View>
+        )}
+        ListFooterComponent={summary}
+        keyExtractor={(item) => item.id.toString()}
+      />
     </View>
   )
 }
@@ -369,12 +280,13 @@ const styles = (theme = {} as ThemeColors) =>
       flexWrap: 'wrap',
     },
     paginationImageStyle: {
-      height: screenWidth / 3,
-      aspectRatio: 1,
+      width: screenWidth / 4,
+      height: screenWidth / 4,
       resizeMode: 'contain',
     },
     titleText: {
       fontSize: 16,
+      fontWeight: 'bold',
       color: '#444',
     },
     subtitleText: {
@@ -383,14 +295,15 @@ const styles = (theme = {} as ThemeColors) =>
     },
     rowPriceText: {
       fontSize: 14,
-      color: ThemeStatic.accent,
+      color: ThemeStatic.black,
     },
     footerText: {
       fontSize: 16,
       color: theme.text02,
     },
     totalText: {
-      fontSize: 17,
+      fontSize: 16,
+      fontWeight: 'bold',
       color: ThemeStatic.accent,
     },
     xbutton: { display: 'flex', flexDirection: 'row-reverse' },

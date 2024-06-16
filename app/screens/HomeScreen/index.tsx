@@ -1,3 +1,4 @@
+import { addToCart } from '@app/actions/cart'
 import { getUserProfile } from '@app/actions/login'
 import { getProducts } from '@app/actions/product'
 import {
@@ -212,6 +213,7 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
     itemDetailBottomSheetRef.current?.open()
   }
   const onAddCart = (item: any) => {
+    dispatch(addToCart(item))
     console.log('add to cart', item)
   }
 

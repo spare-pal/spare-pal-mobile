@@ -36,6 +36,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { AnimatedSearchBar } from '../../layout'
 import FeedCard from '../common/FeedCard'
+import ItemDetailBottomSheet from './components/ItemDetailBottomSheet'
 
 const { FontWeights, FontSizes } = Typography
 
@@ -89,6 +90,8 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
   const historyData = useSelector((state) => state?.shop?.historyData)
   const user = useSelector((state) => state?.user)
   const isRefreshing = useSelector((state) => state?.shop?.shopListLoading)
+  const itemDetailBottomSheetRef = React.useRef(null)
+  const [item, setItem] = useState(null)
 
   useEffect(() => {
     Linking.getInitialURL().then((url) => {
@@ -204,7 +207,9 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
   }
   const onBlur = () => setIsSearchFocused(false)
   const onListingDetail = (item: any, index: number) => {
-    navigate('ListingDetail', { data: item, index })
+    setItem(item)
+    // @ts-ignore
+    itemDetailBottomSheetRef.current?.open()
   }
   const onAddCart = (item: any) => {
     console.log('add to cart', item)
@@ -301,15 +306,17 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
             />
           }
           renderItem={({ item }) => (
-            <>
+            <TouchableOpacity
+              key={item.id}
+              onPress={() => onListingDetail(item, 0)}
+            >
               <FeedCard
                 isSelling={false}
                 item={item}
-                key={item.id}
-                onDetail={onListingDetail}
+                onDetail={() => {}}
                 onAddCart={onAddCart}
               />
-            </>
+            </TouchableOpacity>
           )}
           ListEmptyComponent={() => (
             <ListEmptyComponent
@@ -623,6 +630,11 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
       <CollapsibleSubHeaderAnimator translateY={translateY}>
         {header}
       </CollapsibleSubHeaderAnimator>
+      <ItemDetailBottomSheet
+        ref={itemDetailBottomSheetRef}
+        onAddCart={onAddCart}
+        item={item}
+      />
     </View>
   )
 }

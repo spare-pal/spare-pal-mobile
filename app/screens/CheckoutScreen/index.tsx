@@ -4,11 +4,12 @@ import {
   showErrorNotification,
   showSuccessNotification,
 } from '@app/utils/notifications'
-import { Button, Card, Text } from 'native-base'
+import { Button, Card, ScrollView, Text } from 'native-base'
 import React from 'react'
 import { ActivityIndicator, Image, TextInput, View } from 'react-native'
 import { Col, Row } from 'react-native-easy-grid'
 import { useDispatch, useSelector } from 'react-redux'
+import { ThemeStatic } from '../../theme'
 
 const CheckoutScreen: React.FC = ({ navigation }: any) => {
   const dispatch = useDispatch()
@@ -16,7 +17,17 @@ const CheckoutScreen: React.FC = ({ navigation }: any) => {
   const { carts, placeOrderLoading } = useSelector((state) => state.cart)
   const [address, setAddress] = React.useState('')
   const [note, setNote] = React.useState('')
-
+  const calculateTotal = () => {
+    if (carts && carts.length > 0) {
+      const totalPrice = carts.reduce(
+        (acc, cartItem) => cartItem.quantity * cartItem.item.price + acc,
+        0
+      )
+      return totalPrice.toFixed(2)
+    } else {
+      return 0.0
+    }
+  }
   const handleSubmit = () => {
     if (!address) {
       showErrorNotification('Please enter delivery address')
@@ -50,7 +61,13 @@ const CheckoutScreen: React.FC = ({ navigation }: any) => {
   return (
     <View style={{ flex: 1 }}>
       <ProfileHeader title='Checkout' goBack={() => navigate('CartScreen')} />
-      <View style={{ flex: 1, alignItems: 'center', backgroundColor: 'white' }}>
+      <ScrollView
+        contentContainerStyle={{
+          flex: 1,
+          alignItems: 'center',
+          backgroundColor: 'white',
+        }}
+      >
         {carts.map((data) => {
           const { id, quantity, item } = data
           const { name, Images, price } = item
@@ -115,6 +132,28 @@ const CheckoutScreen: React.FC = ({ navigation }: any) => {
             </Card>
           )
         })}
+        <View
+          style={{
+            width: '90%',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            borderColor: ThemeStatic.text02,
+            borderWidth: 1,
+            padding: 10,
+            borderRadius: 10,
+            marginVertical: 10,
+          }}
+        >
+          <Text>TOTAL</Text>
+          <Text
+            style={{
+              fontWeight: 'bold',
+              fontSize: 16,
+            }}
+          >
+            ETB {calculateTotal()}
+          </Text>
+        </View>
         <TextInput
           style={{
             height: 40,
@@ -158,7 +197,7 @@ const CheckoutScreen: React.FC = ({ navigation }: any) => {
             </Text>
           )}
         </Button>
-      </View>
+      </ScrollView>
     </View>
   )
 }

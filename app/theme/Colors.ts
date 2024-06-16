@@ -31,7 +31,7 @@ export const DynamicStatusBar: DynamicStatusBarType = {
 export const ThemeStatic: ThemeStaticType = {
   accent: '#ED1641',
   accentLight: '#FF5E71',
-  secondaryLight: '#FFD4C0',
+  secondaryLight: '#FA9F4299',
   white: '#F3F3F3',
   black: '#333333',
   text01: '#000000',

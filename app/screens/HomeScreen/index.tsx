@@ -14,7 +14,6 @@ import { ThemeStatic, Typography } from '@app/theme'
 import { ThemeColors } from '@app/types/theme'
 import { FontAwesome } from '@expo/vector-icons'
 import * as Linking from 'expo-linking'
-import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency'
 import { Text } from 'native-base'
 import React, { useContext, useEffect, useState } from 'react'
 import {
@@ -90,15 +89,6 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
   const historyData = useSelector((state) => state?.shop?.historyData)
   const user = useSelector((state) => state?.user)
   const isRefreshing = useSelector((state) => state?.shop?.shopListLoading)
-
-  useEffect(() => {
-    ;(async () => {
-      const { status } = await requestTrackingPermissionsAsync()
-      if (status === 'granted') {
-      } else {
-      }
-    })()
-  }, [])
 
   useEffect(() => {
     Linking.getInitialURL().then((url) => {
@@ -193,10 +183,6 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
     updateBrand(item)
   }
 
-  const onChangeGender = (item: string) => {
-    updateGender(item)
-  }
-
   const [catId, setCateId] = useState([])
   const [sizeId, setSizeId] = useState([])
   const [brandId, setBrandsId] = useState([])
@@ -220,6 +206,9 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
   const onListingDetail = (item: any, index: number) => {
     navigate('ListingDetail', { data: item, index })
   }
+  const onAddCart = (item: any) => {
+    console.log('add to cart', item)
+  }
 
   const onRefresh = () => {
     if (
@@ -237,13 +226,12 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
   const onEndReachedListing = () => {
     if (
       products.length > 0 &&
-      productsPayload?.next !== null &&
+      productsPayload?.pagination?.next !== null &&
       !isLoadingMore
     ) {
-      console.log(productsPayload)
       setIsLoadingMore(true)
       const obj = {
-        next: productsPayload.next,
+        next: productsPayload.pagination.next,
         onSuccess: () => {
           setIsLoadingMore(false)
         },
@@ -255,68 +243,7 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
     }
   }
 
-  const applyFilterData = () => {
-    let categoryData = []
-    let filterUrl
-    let splitUrl = searchFilters.split('?')
-
-    if (genderId && genderId.length > 0) {
-      for (var i = 0; i < genderId.length; i++) {
-        categoryData.push(`items__gender=${genderId[i]}`)
-      }
-    }
-    for (var i = 0; i < catId.length; i++) {
-      categoryData.push(`items__category=${catId[i]}`)
-    }
-
-    for (var i = 0; i < sizeId.length; i++) {
-      categoryData.push(`items__size=${sizeId[i]}`)
-    }
-
-    for (var i = 0; i < brandId.length; i++) {
-      categoryData.push(`items__brand=${brandId[i]}`)
-    }
-
-    var arr = categoryData.indexOf(splitUrl[1]) > -1
-    if (!arr && splitUrl[1]) categoryData.push(splitUrl[1])
-
-    filterUrl =
-      categoryData.length > 0
-        ? '/listings/?' + categoryData.join('&')
-        : '/listings/'
-
-    setRefreshFilter(filterUrl)
-    setDispatchFilter(filterUrl)
-    if (categoryData.length !== 0) {
-      dispatch(filterData(filterUrl))
-    }
-  }
-
-  const resetFilters = () => {
-    setIsClear(true)
-    updateBrand('')
-    updateGender('')
-    updateCategory([])
-    updateSize('')
-    setGenderId([])
-    setSizeId([])
-    setCateId([])
-    setBrandsId([])
-
-    setDispatchFilter('')
-    dispatch(getShopList())
-  }
-
   let header = <ExploreScreenPlaceholder />
-  const multiSelectionFilterStyle = {
-    selectToggle: {
-      marginHorizontal: 10,
-    },
-    selectToggleText: {
-      fontSize: 13,
-      paddingHorizontal: 4,
-    },
-  }
 
   if (!false) {
     header = (
@@ -364,9 +291,7 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
                 ? containerPaddingTop + stickyHeaderHeight
                 : containerPaddingTop + stickyHeaderHeight,
           }}
-          scrollIndicatorInsets={{
-            top: stickyHeaderHeight + containerPaddingTop,
-          }}
+          showsVerticalScrollIndicator={false}
           data={products}
           refreshControl={
             <RefreshControl
@@ -382,12 +307,13 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
                 item={item}
                 key={item.id}
                 onDetail={onListingDetail}
+                onAddCart={onAddCart}
               />
             </>
           )}
           ListEmptyComponent={() => (
             <ListEmptyComponent
-              placeholder='no matching listings'
+              placeholder='No matching products'
               placeholderStyle={styles().placeholderStyle}
               spacing={10}
             />
@@ -398,7 +324,7 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
           ListFooterComponent={() => (
             <View>
               {isLoadingMore && (
-                <ActivityIndicator size={'large'} color={theme.accent} />
+                <ActivityIndicator size={'large'} color={ThemeStatic.accent} />
               )}
             </View>
           )}
@@ -494,22 +420,6 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
         </View>
       </TouchableOpacity>
     )
-  }
-
-  const filterGlobal = (item) => {
-    if (item.urlId.startsWith('items__category')) {
-      if (category.length == 0) {
-        onChangeCategory([item.name])
-      }
-    } else if (item.urlId.startsWith('items__size')) {
-      if (size.length === 0) {
-        onChangeSize([item.name])
-      }
-    } else if (item.urlId.startsWith('items__brand')) {
-      if (brand.length === 0) {
-        onChangeBrand([item.name])
-      }
-    }
   }
 
   const filterGlobalFromSearch = (item) => {

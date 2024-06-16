@@ -1,6 +1,6 @@
 import WebService from '../helpers/WebService'
 
-export const getProducts = (next: any) => {
+export const getProducts = (next: number | undefined) => {
   return new Promise((resolve, reject) => {
     WebService.getProducts(next)
       .then((response) => {

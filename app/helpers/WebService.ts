@@ -71,8 +71,8 @@ const WebService = (() => {
     return NetworkHelper.requestGet(apiURL)
   }
 
-  const getProducts = async (page: number) => {
-    let apiURL = __makeUrl(`/product?page=${page ?? 1}&items_per_page=10`)
+  const getProducts = async (page: number | undefined) => {
+    let apiURL = __makeUrl(`/product?page=${page ?? 1}&items_per_page=5`)
     return NetworkHelper.requestGet(apiURL)
   }
 

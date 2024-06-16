@@ -1,20 +1,16 @@
 import { IconSizes } from '@app/constants'
-import { AppContext } from '@app/context'
 import { ThemeStatic } from '@app/theme'
 import { ThemeColors } from '@app/types/theme'
 import { FontAwesome5 } from '@expo/vector-icons'
 import { Button, Card, Text, View } from 'native-base'
-import React, { useContext, useState } from 'react'
+import React from 'react'
 import { StyleSheet } from 'react-native'
-import { Col, Grid, Row } from 'react-native-easy-grid'
-import { useSelector } from 'react-redux'
 import FeedCarousel from '../../common/FeedCarousel'
 
 interface FeedCardProps {
   item: any
   isSelling?: boolean
-  onAddCart?: (item: any) => void
-  onFavorite?: (item: any) => void
+  onAddCart: (item: any) => void
   onDetail: (item: any, index: number) => void
 }
 const FeedCard: React.FC<FeedCardProps> = ({
@@ -22,20 +18,16 @@ const FeedCard: React.FC<FeedCardProps> = ({
   isSelling,
   onDetail,
   onAddCart,
-  onFavorite,
 }) => {
-  const { theme } = useContext(AppContext)
-  const { title, price, tags, Images, status } = item
-  var formatter = new Intl.NumberFormat('en-US', {
+  const { name, price, Images, status, description } = item
+  const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'ETB',
   })
   const priceFormat = formatter.format(price)
-  const navigateToScreen = (index) => {
+  const navigateToScreen = (index: number) => {
     onDetail(item, index)
   }
-
-  const options = useSelector((state) => state.shop.options)
 
   const badgeStatus = (status) => {
     switch (status) {
@@ -145,41 +137,19 @@ const FeedCard: React.FC<FeedCardProps> = ({
                 alignItems: 'center',
               }}
             >
-              <View
-                style={{
-                  marginRight: 10,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: ThemeStatic.accent,
-                  borderRadius: 20,
-                  height: 25,
-                  width: 25,
-                }}
-              >
-                <Text
-                  style={{
-                    color: '#FFFFFF',
-                    fontSize: 16,
-                    alignSelf: 'center',
-                  }}
-                  onPress={(i) => navigateToScreen(0)}
-                >
-                  {item.id}
-                </Text>
-              </View>
               <Text
                 style={{
                   maxWidth: 210,
-
                   marginRight: 22,
-                  fontWeight: '500',
+                  fontWeight: 'bold',
                   padding: 5,
                   fontSize: 16,
                 }}
                 onPress={(i) => navigateToScreen(0)}
-                accessibilityLabel={`${title}`}
+                accessibilityLabel={`${name}`}
+                noOfLines={1}
               >
-                {title}
+                {name}
               </Text>
             </View>
             {isSelling && <View style={{}}>{badgeStatus(status)}</View>}
@@ -187,47 +157,39 @@ const FeedCard: React.FC<FeedCardProps> = ({
         </View>
 
         <FeedCarousel items={Images} onPress={(i) => navigateToScreen(i)} />
-        <Grid>
-          <Col>
-            <Row>
-              <Col
-                style={{
-                  alignItems: 'flex-end',
-                  alignSelf: 'flex-end',
-                }}
-              >
-                <Row>
-                  <Text
-                    style={styles(theme).priceText}
-                    accessibilityLabel={`${priceFormat}_feedCard`}
-                  >
-                    {priceFormat}
-                  </Text>
-
-                  <Button
-                    onPress={() => onAddCart(item)}
-                    block
-                    bordered
-                    style={{
-                      width: 40,
-                      marginLeft: 10,
-                      alignSelf: 'flex-center',
-                      backgroundColor: ThemeStatic.white,
-                      borderColor: ThemeStatic.translucent,
-                    }}
-                    accessibilityLabel={'addToCart_feedCard'}
-                  >
-                    <FontAwesome5
-                      name='cart-arrow-down'
-                      size={IconSizes.x5}
-                      style={{ fontSize: 15, color: '#FA9F42' }}
-                    />
-                  </Button>
-                </Row>
-              </Col>
-            </Row>
-          </Col>
-        </Grid>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: 10,
+          }}
+        >
+          <Button
+            onPress={() => onAddCart(item)}
+            block
+            bordered
+            style={{
+              width: 45,
+              backgroundColor: ThemeStatic.placeholder,
+              borderColor: ThemeStatic.secondaryLight,
+              borderWidth: 1,
+            }}
+            accessibilityLabel={'addToCart_feedCard'}
+          >
+            <FontAwesome5
+              name='cart-arrow-down'
+              size={IconSizes.x5}
+              style={{ fontSize: 15, color: ThemeStatic.accentLight }}
+            />
+          </Button>
+          <Text
+            style={styles().priceText}
+            accessibilityLabel={`${priceFormat}_feedCard`}
+          >
+            {priceFormat}
+          </Text>
+        </View>
       </Card>
     </View>
   )

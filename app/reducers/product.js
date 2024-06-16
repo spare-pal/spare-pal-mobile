@@ -17,10 +17,9 @@ export default (state = initialState, action) => {
       return {
         ...state,
         productsPayload: action.payload.data.payload,
-        products:
-          action.payload.data.payload.prev === null
-            ? action.payload.data.data
-            : [...state.products, ...action.payload.data.data],
+        products: !action.payload.data.payload.pagination.prev
+          ? action.payload.data.data
+          : state.products.concat(action.payload.data.data),
         error: null,
         loadingData: false,
         success: true,

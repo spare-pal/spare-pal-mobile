@@ -22,7 +22,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ title, goBack }) => {
         w='100%'
       >
         <TouchableOpacity onPress={() => goBack()} style={{ flex: 1 }}>
-          <LeftArrow />
+          <LeftArrow accent={false} />
         </TouchableOpacity>
         <HStack alignItems='center' style={{ margin: 'auto' }}>
           <Text color='white' fontSize='20' fontWeight='bold'>

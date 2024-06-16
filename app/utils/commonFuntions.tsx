@@ -13,10 +13,16 @@ import { showErrorNotification } from './notifications'
 import { saveTokenAndNavigate } from './common'
 import { ThemeStatic } from '../theme'
 
-export function LeftArrow() {
+export function LeftArrow({ accent = true }: { accent?: boolean }) {
   return (
     <View style={style.container}>
-      <AntDesign name='arrowleft' style={style.closeIconStyle} />
+      <AntDesign
+        name='arrowleft'
+        style={{
+          ...style.closeIconStyle,
+          color: accent ? ThemeStatic.accent : ThemeStatic.white,
+        }}
+      />
     </View>
   )
 }
@@ -169,7 +175,6 @@ const style = StyleSheet.create({
   closeIconStyle: {
     fontSize: 30,
     padding: 5,
-    color: ThemeStatic.white,
     marginLeft: -6,
   },
   logoImage: { width: 45, height: 45, position: 'relative', left: -25 },

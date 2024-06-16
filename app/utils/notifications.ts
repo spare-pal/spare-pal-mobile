@@ -1,9 +1,9 @@
-import { showMessage } from 'react-native-flash-message'
 import { ThemeStatic } from '@app/theme'
+import { showMessage } from 'react-native-flash-message'
 
 export const welcomeNotification = () =>
   showMessage({
-    message: 'Welcome to BundleUp',
+    message: 'Welcome to Spare Pal',
     icon: 'success',
     type: 'success',
     duration: 2000,

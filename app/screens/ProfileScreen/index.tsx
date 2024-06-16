@@ -1,57 +1,24 @@
-import React, { useEffect, useState, useRef, Fragment, useContext } from 'react'
+import { getUserProfile, logoutUser } from '@app/actions/login'
+import { ThemeStatic } from '@app/theme'
+import { removeToken } from '@app/utils/reduxStore'
+import { Text } from 'native-base'
+import React, { Fragment, useEffect } from 'react'
 import {
   Image,
+  ImageBackground,
+  Platform,
   ScrollView,
   StyleSheet,
-  View,
-  Alert,
-  ImageBackground,
-  ActionSheetIOS,
-  Platform,
   TouchableOpacity,
+  View,
 } from 'react-native'
-import { Badge, Text } from 'native-base'
-
-import * as ImagePicker from 'expo-image-picker'
-import { ImageInfo } from 'expo-image-picker/build/ImagePicker.types'
-import * as Permissions from 'expo-permissions'
-import mimes from 'react-native-mime-types'
-import randomstring from 'random-string'
-import { ThemeStatic } from '@app/theme'
-import { useSelector, useDispatch } from 'react-redux'
-import { removeToken } from '@app/utils/reduxStore'
-import { logoutUser, getUserProfile, updateProfile } from '@app/actions/login'
-import { connectStripe } from '@app/actions/signup'
-import { getPurchasedBundles, getShopList } from '@app/actions/shop'
-import StripeConnectSheet from '../../screens/common/StripeConnectSheet'
-import WebViewSheet from '../../screens/common/WebViewSheet'
-import {
-  expressDashboard,
-  stripeAccountLink,
-  getStripeBalance,
-  deleteProfile,
-} from '@app/actions/login'
-import { AppContext } from '@app/context'
-import { profileDeletedNotification } from '@app/utils/notifications'
-import { MaterialIcons } from '@expo/vector-icons'
-
-var formatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-})
+import { useDispatch, useSelector } from 'react-redux'
 
 const ProfileScreen: React.FC = ({ navigation }: any) => {
   const user = useSelector((state) => state.user)
-  const { updateSize, updateBrand, updateCategory, updateGender } =
-    useContext(AppContext)
-
-  const purchasedBundles = useSelector((state) => state.shop.purchasedBundles)
-  const dashboard = useSelector((state) => state.user.dashboard)
 
   const { profile } = user
-  console.log(profile)
   const avatarBackground = require('@app/assets/images/canvaspurple.png')
-  const defaultAvatar = require('@app/assets/images/default_user.jpg')
 
   const { navigate } = navigation
   const dispatch = useDispatch()
@@ -59,276 +26,45 @@ const ProfileScreen: React.FC = ({ navigation }: any) => {
     await removeToken()
     dispatch(logoutUser())
     navigate('Auth')
-    updateGender([])
-    updateCategory([])
-    updateSize([])
-    updateBrand([])
   }
 
   useEffect(() => {
-    dispatch(getShopList())
-    if (user.profile) {
-      let userProfile = {
-        onSuccess: (res) => {
-          if (res) {
-            dispatch(getPurchasedBundles())
-          }
-        },
-        onFail: (err) => {},
-      }
-      dispatch(getUserProfile(userProfile))
-      dispatch(getStripeBalance())
-    }
+    dispatch(getUserProfile())
   }, [])
 
-  const { first_name, last_name, email, photo, account, is_stripe_connected } =
+  const { first_name, last_name, phone_number } =
     profile !== null ? profile : {}
-
-  const [profileFormData, setProfileFormData] = useState<FormData>(
-    new FormData()
-  )
-  const [avatar, setAvatar] = useState<any>(photo ? photo : defaultAvatar)
-  const [attachedImage, setAttachedImage] = useState<any>()
-  const [avatarUpdated, setAvatarUpdated] = useState<boolean>(false)
-  const BottomSheetRef = useRef()
-  const ResolutionCenterSheetRef = useRef()
-  const expressUrlRef = useRef()
-  const stripeAccountLinkRef = useRef()
-
-  const onBottomSheetRefOpen = () => BottomSheetRef.current.open()
-
-  const onBottomSheetRefClose = () => BottomSheetRef.current.close()
-
-  const onResolutionSheetRefOpen = () => ResolutionCenterSheetRef.current.open()
-
-  const onResolutionSheetRefClose = () =>
-    ResolutionCenterSheetRef.current.close()
-
-  const onExpressDashboardOpen = () => expressUrlRef.current.open()
-
-  const onExpressDashboardClose = () => expressUrlRef.current.close()
-
-  const onStripeAccountLinkOpen = () => stripeAccountLinkRef.current.open()
-
-  const onStripeAccountLinkClose = () => stripeAccountLinkRef.current.close()
-
-  const modalClose = () => {
-    onBottomSheetRefClose()
-  }
-
-  const onCameraPressed = () => {
-    if (Platform.OS === 'android') {
-      Alert.alert('', '', [
-        {
-          text: 'Take a picture from the folder',
-          onPress: () => runGalleryAsync(),
-        },
-        {
-          text: 'Take photos from the camera',
-          onPress: () => takePhotoAsync(),
-        },
-      ])
-    } else {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: [
-            'Take photos from the camera',
-            'Take a picture from the folder',
-            'cancel',
-          ],
-          cancelButtonIndex: 2,
-        },
-        (buttonIndex: any) => {
-          if (buttonIndex === 0) {
-            takePhotoAsync()
-          } else if (buttonIndex === 1) {
-            runGalleryAsync()
-          }
-        }
-      )
-    }
-  }
 
   const checkNameValue = (name: string | string[]) => {
     if (typeof name === 'string' && !name.startsWith('This field')) {
       return name
     }
   }
-
-  const onPressConnectStripe = () => {
-    const data = {
-      country: 'US',
-      type: 'custom',
-      email: email,
-      capabilities: {
-        card_payments: {
-          requested: true,
-        },
-        transfers: {
-          requested: true,
-        },
-      },
-    }
-    dispatch(connectStripe(data))
-    onBottomSheetRefOpen()
-  }
-  const runGalleryAsync = async () => {
-    await askPermissionsAsync()
-    const result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    })
-    if (!result.cancelled) {
-      await _attachImage(result as ImageInfo)
-    }
-  }
-
-  const takePhotoAsync = async () => {
-    await askPermissionsAsync()
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-    })
-    if (!result.cancelled) {
-      await _attachImage(result as ImageInfo)
-    }
-  }
-
-  const askPermissionsAsync = async () => {
-    await Permissions.askAsync(Permissions.CAMERA)
-    await Permissions.askAsync(Permissions.CAMERA_ROLL)
-  }
-
-  const _attachImage = async (result: ImageInfo) => {
-    const dd = {
-      uri: result.uri,
-      base64: result.base64,
-      name: randomstring() + '.' + mimes.extension(mimes.lookup(result.uri)),
-      type: mimes.lookup(result.uri),
-    }
-    setAvatar(result.uri)
-    setAttachedImage(dd)
-    setAvatarUpdated(true)
-  }
-
-  const onSaveProfile = () => {
-    if (avatarUpdated) {
-      profileFormData.append('photo', attachedImage)
-    }
-
-    let profile = {
-      item: profileFormData,
-    }
-
-    dispatch(updateProfile(profile))
-    setProfileFormData(new FormData())
-    setAvatarUpdated(false)
-  }
-
-  const expressDashboardData = () => {
-    dispatch(expressDashboard())
-    onExpressDashboardOpen()
-  }
-
-  const stripeAccountLinkModal = () => {
-    dispatch(stripeAccountLink())
-    onStripeAccountLinkOpen()
-  }
-
-  const sellingDetailsRequired = () => {
-    if (profile && profile.account && profile.account.requirements) {
-      const requirements = profile.account.requirements
-      if (requirements.errors.length > 0) {
-        return requirements.errors[0].reason
-      } else if (requirements.pending_verification.length > 0) {
-        return 'Pending Verification'
-      } else if (
-        requirements.past_due.length == 1 &&
-        requirements.past_due[0] == 'external_account'
-      ) {
-        return false
-      } else if (requirements.past_due.length > 0) {
-        return 'Missing info required'
-      } else {
-        return false
-      }
-    }
-    return 'Attention needed'
-  }
-
-  const bankAccountLinked = () => {
-    if (profile && profile.account && profile.account.requirements) {
-      const requirements = profile.account.requirements
-      if (!requirements.past_due.includes('external_account')) {
-        return true
-      }
-    }
-    return false
-  }
-
-  const bankInfo = () => {
-    if (!bankAccountLinked()) {
-      return 'Add an account for payouts'
-    } else {
-      return 'Connected!'
-    }
-  }
-
-  const stripeAddress = () => {
-    if (
-      profile &&
-      profile.account &&
-      profile.account.company &&
-      profile.account.company.address
-    ) {
-      const address = profile.account.company.address
-      let result
-      result = address.line1 + '\n'
-      result += address.line2 ? address.line2 : ''
-
-      result += address.city + ', ' + address.state + ' ' + address.postal_code
-
-      return result
-    }
-  }
-
-  const stripeAvailableBalance = () => {
-    if (profile && profile.stripe_balance) {
-      return formatter.format(profile.stripe_balance.available.amount)
-    } else if (
-      profile &&
-      profile.balance &&
-      profile.balance?.available?.length
-    ) {
-      return formatter.format(profile.balance.available[0].amount / 100)
-    }
-    return formatter.format(0)
-  }
-  const stripePendingBalance = () => {
-    if (profile && profile.stripe_balance) {
-      return formatter.format(profile.stripe_balance.pending.amount)
-    }
-    return false
-  }
-
   const renderHeader = () => {
     if (profile !== null) {
       return (
         <View style={styles().headerContainer}>
           <ImageBackground
-            style={[styles().headerBackgroundImage, { backgroundColor: 'red' }]}
+            style={[
+              styles().headerBackgroundImage,
+              { backgroundColor: ThemeStatic.accent },
+            ]}
             blurRadius={10}
             source={avatarBackground}
           >
             <View style={styles().headerColumn}>
               <TouchableOpacity>
-                <Image style={styles().userImage} source={avatar} />
+                <Image
+                  style={styles().userImage}
+                  source={require('@app/assets/images/default_user.jpg')}
+                />
               </TouchableOpacity>
               <Text style={styles().userNameText}>{`${
                 checkNameValue(first_name) ?? 'New'
               } ${checkNameValue(last_name) ?? 'User'}`}</Text>
               <View style={styles().userAddressRow}>
                 <View style={styles().userCityRow}>
-                  <Text style={styles().usernameText}>{email}</Text>
+                  <Text style={styles().usernameText}>{phone_number}</Text>
                 </View>
               </View>
             </View>
@@ -353,28 +89,7 @@ const ProfileScreen: React.FC = ({ navigation }: any) => {
     <Fragment>
       <ScrollView>
         <View style={{ padding: 15 }}>
-          <Text style={styles().noteText}>BUYING</Text>
           <Divider />
-          <TouchableOpacity
-            onPress={() => navigate('PurchaseScreen')}
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-            accessibilityLabel='Purchase History'
-          >
-            <Text style={[{ marginStart: 10 }, styles().balanceText]}>
-              Purchase History
-            </Text>
-            <Badge backgroundColor={'blue.400'} borderRadius={40}>
-              <Text style={{ color: '#fff' }}>
-                {purchasedBundles.length || 0}
-              </Text>
-            </Badge>
-          </TouchableOpacity>
-          <Divider />
-
           <Text style={styles().noteText}>ACCOUNT</Text>
           <Divider />
           <>
@@ -494,7 +209,7 @@ const styles = (theme = {}) =>
       backgroundColor: 'transparent',
     },
     usernameText: {
-      color: ThemeStatic.accent,
+      color: ThemeStatic.accentLight,
       fontSize: 15,
       fontWeight: '600',
       textAlign: 'center',

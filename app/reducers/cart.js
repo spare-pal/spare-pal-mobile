@@ -11,6 +11,7 @@ const initialState = {
   favors: [],
   loading: false,
   checkouts: {},
+  placeOrderLoading: false,
 }
 
 export default (state = initialState, action) => {
@@ -56,7 +57,21 @@ export default (state = initialState, action) => {
         ),
       }
     }
+    case actionType.PLACE_ORDER_LOADING: {
+      return {
+        ...state,
+        placeOrderLoading: action.payload.loading,
+      }
+    }
+    case actionType.PLACE_ORDER_SUCCESS: {
+      return {
+        ...state,
+        carts: [],
+        placeOrderLoading: false,
+      }
+    }
 
+    /// previous code
     case actionType.DELETE_LOCAL_CART_ITEM: {
       return {
         ...state,

@@ -16,6 +16,22 @@ import TabBarComponent from './TabBarComponent'
 const Stack = createStackNavigator()
 const Tab = createBottomTabNavigator()
 
+function CartStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName='CartScreen'
+      screenOptions={{ ...TransitionPresets.SlideFromRightIOS }}
+      headerMode='none'
+    >
+      <Tab.Screen name='CartScreen' component={TabBarRoutes.CartScreen} />
+      <Stack.Screen
+        name='CheckoutScreen'
+        component={StackRoutes.CheckoutScreen}
+      />
+    </Stack.Navigator>
+  )
+}
+
 function ProfileStack() {
   return (
     <Stack.Navigator
@@ -42,7 +58,7 @@ function TabNavigator() {
       tabBar={(props) => <TabBarComponent {...props} />}
     >
       <Tab.Screen name='HomeScreen' component={TabBarRoutes.HomeScreen} />
-      <Tab.Screen name='CartScreen' component={TabBarRoutes.CartScreen} />
+      <Tab.Screen name='CartScreen' component={CartStack} />
       <Tab.Screen name='ProfileScreen' component={ProfileStack} />
     </Tab.Navigator>
   )
@@ -116,10 +132,6 @@ export default ({ initialScreen }) => {
             </>
           )}
           <Stack.Screen name='App' component={TabNavigator} />
-          <Stack.Screen
-            name='CheckoutScreen'
-            component={StackRoutes.CheckoutScreen}
-          />
         </>
       </Stack.Navigator>
     </NavigationContainer>

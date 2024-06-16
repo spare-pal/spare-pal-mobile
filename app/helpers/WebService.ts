@@ -315,12 +315,13 @@ const WebService = (() => {
     )
   }
 
-  const cartCheckout = async (obj: any) => {
+  const placeOrder = async (obj: any) => {
+    console.log(obj)
     let token = null
     try {
       token = await __getToken()
     } catch (ex) {}
-    return NetworkHelper.requestPost(__makeUrl(`/cart/checkout/v2`), obj, token)
+    return NetworkHelper.requestPost(__makeUrl(`/order`), obj, token)
   }
 
   const expressDashboard = async () => {
@@ -412,7 +413,7 @@ const WebService = (() => {
     getCart,
     addToCart,
     deleteFromCart,
-    cartCheckout,
+    placeOrder,
     filterData,
     unpublishBundle,
     clearImage,

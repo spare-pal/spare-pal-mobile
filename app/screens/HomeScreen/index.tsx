@@ -214,7 +214,6 @@ const HomeScreen: React.FC = ({ navigation, route }: any) => {
   }
   const onAddCart = (item: any) => {
     dispatch(addToCart(item))
-    console.log('add to cart', item)
   }
 
   const onRefresh = () => {

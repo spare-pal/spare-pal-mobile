@@ -198,6 +198,7 @@ const CartScreen: React.FC = ({ navigation }: any) => {
         <Button
           style={{ margin: 16, backgroundColor: '#5CB85C' }}
           disabled={carts && carts.length > 0 ? false : true}
+          onPress={() => navigation.navigate('CheckoutScreen')}
         >
           <Text style={{ color: '#FFFFFF' }}>Checkout</Text>
         </Button>
@@ -228,7 +229,6 @@ const CartScreen: React.FC = ({ navigation }: any) => {
         </HStack>
       </HStack>
       <FlatList
-        extraData={carts.length}
         bounces={false}
         showsVerticalScrollIndicator={false}
         data={carts && carts.length > 0 ? carts : []}
@@ -259,7 +259,7 @@ const CartScreen: React.FC = ({ navigation }: any) => {
   )
 }
 
-const styles = (theme = {} as ThemeColors) =>
+export const styles = (theme = {} as ThemeColors) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -280,8 +280,9 @@ const styles = (theme = {} as ThemeColors) =>
       flexWrap: 'wrap',
     },
     paginationImageStyle: {
-      width: screenWidth / 4,
-      height: screenWidth / 4,
+      width: 100,
+      height: 80,
+      borderRadius: 10,
       resizeMode: 'contain',
     },
     titleText: {

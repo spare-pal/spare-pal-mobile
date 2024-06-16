@@ -169,7 +169,7 @@ const style = StyleSheet.create({
   closeIconStyle: {
     fontSize: 30,
     padding: 5,
-    color: ThemeStatic.accentLight,
+    color: ThemeStatic.white,
     marginLeft: -6,
   },
   logoImage: { width: 45, height: 45, position: 'relative', left: -25 },

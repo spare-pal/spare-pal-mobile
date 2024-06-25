@@ -256,7 +256,11 @@ const LoginScreen: React.FC = ({ navigation, route }: any) => {
                             {phoneNumber && 'Phone Number'}
                           </Text>
                         )}
-                        <View>
+                        <View
+                          style={{
+                            margin: 10,
+                          }}
+                        >
                           <PhoneInput
                             ref={phoneNumberRef}
                             autoFocus
@@ -286,7 +290,11 @@ const LoginScreen: React.FC = ({ navigation, route }: any) => {
                         </View>
                       </View>
                     ) : (
-                      <View style={[styles().loginItem, { marginTop: 10 }]}>
+                      <View
+                        style={{
+                          margin: 10,
+                        }}
+                      >
                         {errors.password ? (
                           <Text
                             style={[

@@ -152,10 +152,9 @@ export const styles = (theme = {} as ThemeColors) =>
       left: 10,
     },
     loginItem: {
-      height: 70,
-
-      width: '100%',
-      paddingTop: 10,
+      flex: 1,
+      flexDirection: 'column',
+      justifyContent: 'space-evenly',
     },
 
     input: {
